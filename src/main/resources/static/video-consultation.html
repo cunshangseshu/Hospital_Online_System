@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频问诊 - 芯芯数字化在线医疗服务系统</title>
+    <style>
+        :root {
+            --medical-blue: 180, 80%, 45%;
+            --medical-green: 150, 60%, 50%;
+            --medical-warm-white: 210, 20%, 98%;
+            --gradient-medical: linear-gradient(135deg, hsl(180, 80%, 45%), hsl(150, 60%, 50%));
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: hsl(210, 20%, 98%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* 动态背景 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background:
+                radial-gradient(circle at 20% 30%, hsla(180, 80%, 45%, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, hsla(150, 60%, 50%, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, hsla(180, 40%, 55%, 0.04) 0%, transparent 60%);
+            animation: bgFloat 15s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        @keyframes bgFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(10px, -15px) scale(1.02); }
+            66% { transform: translate(-10px, 10px) scale(0.98); }
+        }
+
+        /* 浮动装饰粒子 */
+        .particles {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--gradient-medical);
+            opacity: 0.12;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { width: 60px; height: 60px; top: 15%; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 40px; height: 40px; top: 70%; left: 85%; animation-delay: -2s; }
+        .particle:nth-child(3) { width: 80px; height: 80px; top: 50%; left: 50%; animation-delay: -4s; opacity: 0.06; }
+        .particle:nth-child(4) { width: 30px; height: 30px; top: 25%; left: 75%; animation-delay: -6s; }
+        .particle:nth-child(5) { width: 50px; height: 50px; top: 80%; left: 20%; animation-delay: -3s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+            25% { transform: translateY(-30px) translateX(15px) scale(1.1); }
+            50% { transform: translateY(-15px) translateX(-10px) scale(0.95); }
+            75% { transform: translateY(-40px) translateX(20px) scale(1.05); }
+        }
+
+        /* 主内容卡片 */
+        .container {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: 60px 50px;
+            text-align: center;
+            max-width: 560px;
+            width: 90%;
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.08),
+                0 0 0 1px rgba(255, 255, 255, 0.5);
+            animation: cardIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* 图标区域 */
+        .icon-wrap {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, hsla(180, 80%, 45%, 0.1), hsla(150, 60%, 50%, 0.1));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .icon-wrap::before {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: hsl(180, 80%, 45%);
+            border-right-color: hsl(150, 60%, 50%);
+            animation: spin 3s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .icon-camera {
+            width: 64px;
+            height: 64px;
+            position: relative;
+            background: linear-gradient(135deg, hsl(180, 80%, 45%), hsl(150, 60%, 50%));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-camera::after {
+            content: '';
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 0 0 6px rgba(255,255,255,0.3);
+        }
+
+        .icon-lens {
+            position: absolute;
+            top: -10px;
+            right: -6px;
+            width: 20px;
+            height: 14px;
+            background: hsl(180, 80%, 45%);
+            border-radius: 6px 6px 0 0;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: var(--gradient-medical);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: hsl(210, 10%, 45%);
+            font-size: 16px;
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+
+        /* 施工进度条 */
+        .progress-section {
+            margin: 30px 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: hsl(210, 10%, 40%);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: hsl(210, 20%, 90%);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 75%;
+            background: var(--gradient-medical);
+            border-radius: 4px;
+            animation: progressPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes progressPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* 功能预告列表 */
+        .features {
+            display: flex;
+            gap: 16px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .feature-tag {
+            padding: 10px 20px;
+            border-radius: 50px;
+            background: hsla(180, 80%, 45%, 0.06);
+            color: hsl(180, 80%, 35%);
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid hsla(180, 80%, 45%, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .feature-tag:nth-child(2) {
+            background: hsla(150, 60%, 50%, 0.06);
+            color: hsl(150, 60%, 35%);
+            border-color: hsla(150, 60%, 50%, 0.15);
+        }
+
+        .feature-tag:nth-child(3) {
+            background: hsla(30, 80%, 50%, 0.06);
+            color: hsl(30, 80%, 40%);
+            border-color: hsla(30, 80%, 50%, 0.15);
+        }
+
+        .feature-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        /* 返回按钮 */
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 500;
+            background: var(--gradient-medical);
+            color: white;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 8px 24px hsla(180, 80%, 45%, 0.25);
+        }
+
+        .btn-back:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px hsla(180, 80%, 45%, 0.35);
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .container { padding: 40px 28px; }
+            h1 { font-size: 26px; }
+            .icon-wrap { width: 90px; height: 90px; margin-bottom: 24px; }
+            .icon-camera { width: 48px; height: 48px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 浮动粒子 -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="container">
+        <div class="icon-wrap">
+            <div class="icon-camera">
+                <div class="icon-lens"></div>
+            </div>
+        </div>
+
+        <h1>视频问诊</h1>
+        <p class="subtitle">
+            为了让您获得更优质、更流畅的视频问诊体验，<br>
+            我们的工程师正在精心打造这项功能。
+        </p>
+
+        <div class="progress-section">
+            <div class="progress-label">
+                <span>开发进度</span>
+                <span style="color: hsl(180, 80%, 45%); font-weight: 600;">75%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+        </div>
+
+        <div class="features">
+            <span class="feature-tag">高清视频通话</span>
+            <span class="feature-tag">屏幕共享</span>
+            <span class="feature-tag">电子病历同步</span>
+        </div>
+
+        <p style="color: hsl(210, 10%, 50%); font-size: 14px; margin-top: 6px;">
+            预计上线时间：2026年6月 · 敬请期待
+        </p>
+
+        <a href="/" class="btn-back">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            返回首页
+        </a>
+    </div>
+</body>
+</html>

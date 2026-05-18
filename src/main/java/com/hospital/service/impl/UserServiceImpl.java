@@ -9,6 +9,7 @@ import com.hospital.entity.User;
 import com.hospital.mapper.UserMapper;
 import com.hospital.service.UserService;
 import com.hospital.security.JwtUtil;
+import com.hospital.security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -30,10 +31,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new RuntimeException("用户名已存在");
         }
 
-        // 创建新用户（明文密码存储）
+        // 创建新用户
         User user = new User();
         user.setUsername(request.getUsername());
-        user.setPassword(request.getPassword()); // 明文存储
+        user.setPassword(request.getPassword()); // 直接存储明文密码
         user.setRealName(request.getRealName());
         user.setPhone(request.getPhone());
         user.setEmail(request.getEmail());
@@ -53,7 +54,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new RuntimeException("用户不存在");
         }
 
-        // 验证密码（明文对比）
+        // 验证密码（明文比对）
         if (!request.getPassword().equals(user.getPassword())) {
             throw new RuntimeException("密码错误");
         }
@@ -90,12 +91,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public User getCurrentUser() {
-        // 从SecurityContext中获取当前用户
-        org.springframework.security.core.Authentication authentication =
-            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication != null && authentication.getPrincipal() instanceof User) {
-            return (User) authentication.getPrincipal();
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (userId != null) {
+            return getById(userId);
         }
         return null;
     }

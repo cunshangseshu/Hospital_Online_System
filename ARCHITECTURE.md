@@ -1,5 +1,28 @@
 # 智慧医院管理系统 - 三层架构设计图
 
+> **项目说明**：基于 Spring Boot + MyBatis Plus + AJAX 的智慧医院管理系统，涵盖预约挂号、在线问诊、处方管理三大核心业务。
+>
+> **最后更新**：2026-05-19
+
+---
+
+## 技术栈
+
+### 后端技术
+- **框架**：Spring Boot 2.7.18
+- **ORM**：MyBatis Plus 3.5.3.1
+- **数据库**：MariaDB (兼容 MySQL)
+- **安全**：Spring Security + JWT (jjwt 0.11.5)
+- **构建工具**：Maven
+- **其他**：Lombok、Validation
+
+### 前端技术
+- **HTML5/CSS3**：页面结构和样式（含聊天气泡、渐变动画）
+- **JavaScript (原生)**：XMLHttpRequest 实现 AJAX
+- **DOM 操作**：动态更新页面内容
+
+---
+
 ## 系统整体架构图
 
 ```
@@ -7,108 +30,83 @@
 │                        客户端 (Browser)                              │
 │  ┌──────────────────────────────────────────────────────────────┐  │
 │  │                    前端页面层                                 │  │
-│  │  index.html + CSS + JavaScript (AJAX)                        │  │
+│  │  index.html + video-consultation.html + CSS + JS (AJAX)     │  │
 │  │                                                               │  │
-│  │  • 首页展示                                                    │  │
-│  │  • 科室列表（AJAX动态加载）                                    │  │
-│  │  • 医生团队（AJAX级联查询）                                    │  │
-│  │  • 预约挂号（AJAX异步提交）                                    │  │
-│  │  • 用户登录/注册（AJAX实时验证）                               │  │
+│  │  • 首页 · 科室介绍 · 医生团队                                  │  │
+│  │  • 预约挂号（四级级联 AJAX）                                   │  │
+│  │  • 我的预约（列表/取消/改签）                                  │  │
+│  │  • 在线问诊（聊天/处方/轮询）  ✨                             │  │
+│  │  • 用户登录/注册（实时验证）                                   │  │
 │  └──────────────────────────────────────────────────────────────┘  │
 └────────────────────────────┬────────────────────────────────────────┘
                              │ AJAX请求 (XMLHttpRequest)
-                             │ HTTP/HTTPS
+                             │ HTTP/HTTPS + JWT Bearer Token
                              ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                     表示层 (Presentation Layer)                      │
-│                   Controller - RESTful API                          │
+│                   Controller - RESTful API (7个)                     │
 │  ┌──────────────────────────────────────────────────────────────┐  │
-│  │  AuthController          - /api/auth/login, register         │  │
-│  │  DepartmentController    - /api/departments/list, search     │  │
-│  │  DoctorController        - /api/doctors/list, by-department  │  │
-│  │  ScheduleController      - /api/schedules/available          │  │
-│  │  AppointmentController   - /api/appointments/create, cancel  │  │
+│  │  AuthController          - /api/auth/*         (登录/注册)    │  │
+│  │  DepartmentController    - /api/departments/*  (科室管理)     │  │
+│  │  DoctorController        - /api/doctors/*      (医生管理)     │  │
+│  │  ScheduleController      - /api/schedules/*    (排班查询)     │  │
+│  │  AppointmentController   - /api/appointments/* (预约管理)     │  │
+│  │  ConsultationController  - /api/consultations/*(在线问诊) ✨  │  │
+│  │  PrescriptionController  - /api/prescriptions/*(处方管理) ✨  │  │
 │  │                                                               │  │
-│  │  职责：                                                        │  │
-│  │  • 接收HTTP请求                                                │  │
-│  │  • 参数验证                                                    │  │
-│  │  • 调用Service层                                               │  │
-│  │  • 返回JSON响应                                                │  │
+│  │  职责：接收请求 → 参数验证 → 调用Service → 返回JSON            │  │
 │  └──────────────────────────────────────────────────────────────┘  │
 └────────────────────────────┬────────────────────────────────────────┘
                              │ 方法调用
                              ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                   业务逻辑层 (Business Logic Layer)                  │
-│                      Service - 业务逻辑                             │
+│                      Service - 业务逻辑 (8个实现)                     │
 │  ┌──────────────────────────────────────────────────────────────┐  │
-│  │  UserService                                                   │  │
-│  │  ├─ register()          - 用户注册业务逻辑                     │  │
-│  │  ├─ login()             - 用户登录+JWT生成                    │  │
-│  │  └─ findByUsername()    - 查询用户                            │  │
+│  │  【预约挂号】                                                  │  │
+│  │  UserServiceImpl          - register / login / JWT            │  │
+│  │  DepartmentServiceImpl    - 科室查询 / 搜索                    │  │
+│  │  DoctorServiceImpl        - 医生查询 / 级联 / 搜索             │  │
+│  │  ScheduleServiceImpl      - 排班查询 / 号源增减(事务)          │  │
+│  │  AppointmentServiceImpl   - 预约CRUD / 分页 / 改签(事务)       │  │
 │  │                                                               │  │
-│  │  DepartmentService                                             │  │
-│  │  ├─ getActiveDepartments() - 获取启用科室                     │  │
-│  │  └─ searchByName()      - 搜索科室                            │  │
+│  │  【在线问诊】 ✨                                               │  │
+│  │  ConsultationServiceImpl  - 问诊CRUD / 消息收发 / 轮询         │  │
+│  │  PrescriptionServiceImpl  - 处方开具 / 明细管理(事务)          │  │
+│  │  MedicineServiceImpl      - 药品查询                           │  │
 │  │                                                               │  │
-│  │  DoctorService                                                 │  │
-│  │  ├─ getByDepartmentId() - 按科室查询医生                      │  │
-│  │  ├─ searchDoctors()     - 搜索医生                            │  │
-│  │  └─ getDoctorDetail()   - 获取医生详情                        │  │
-│  │                                                               │  │
-│  │  ScheduleService                                               │  │
-│  │  ├─ getAvailableSchedules() - 查询可用号源                    │  │
-│  │  ├─ decreaseAvailableSlots()- 减少号源（事务）                │  │
-│  │  └─ increaseAvailableSlots()- 增加号源（事务）                │  │
-│  │                                                               │  │
-│  │  AppointmentService                                            │  │
-│  │  ├─ createAppointment() - 创建预约（事务）                    │  │
-│  │  ├─ cancelAppointment() - 取消预约（事务）                    │  │
-│  │  ├─ getByPatientId()    - 查询患者预约                        │  │
-│  │  └─ getByDoctorId()     - 查询医生预约                        │  │
-│  │                                                               │  │
-│  │  职责：                                                        │  │
-│  │  • 业务逻辑处理                                                │  │
-│  │  • 事务管理 (@Transactional)                                  │  │
-│  │  • 数据校验                                                    │  │
-│  │  • 调用Mapper层                                                │  │
+│  │  职责：业务逻辑 · 事务管理(@Transactional) · 数据校验           │  │
 │  └──────────────────────────────────────────────────────────────┘  │
 └────────────────────────────┬────────────────────────────────────────┘
                              │ 数据操作
                              ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                   数据访问层 (Data Access Layer)                     │
-│                 Mapper/DAO - MyBatis Plus                           │
+│                 Mapper - MyBatis Plus (11个)                         │
 │  ┌──────────────────────────────────────────────────────────────┐  │
-│  │  UserMapper          extends BaseMapper<User>                │  │
-│  │  DepartmentMapper    extends BaseMapper<Department>          │  │
-│  │  DoctorMapper        extends BaseMapper<Doctor>              │  │
-│  │  ScheduleMapper      extends BaseMapper<Schedule>            │  │
-│  │  AppointmentMapper   extends BaseMapper<Appointment>         │  │
-│  │  MedicalRecordMapper extends BaseMapper<MedicalRecord>       │  │
-│  │  MedicineMapper      extends BaseMapper<Medicine>            │  │
+│  │  User · Department · Doctor · Schedule · Appointment         │  │
+│  │  MedicalRecord · Medicine                                     │  │
+│  │  Consultation · ConsultationMessage ✨                        │  │
+│  │  Prescription · PrescriptionItem ✨                           │  │
 │  │                                                               │  │
-│  │  职责：                                                        │  │
-│  │  • SQL执行                                                     │  │
-│  │  • ORM映射                                                     │  │
-│  │  •  CRUD操作                                                  │  │
-│  │  • 分页查询                                                    │  │
+│  │  职责：SQL执行 · ORM映射 · CRUD · 分页                         │  │
 │  └──────────────────────────────────────────────────────────────┘  │
 └────────────────────────────┬────────────────────────────────────────┘
-                             │ SQL语句
+                             │ SQL
                              ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        数据库层 (Database)                           │
-│                       MariaDB / MySQL                               │
+│                       MariaDB (11张表)                               │
 │  ┌──────────────────────────────────────────────────────────────┐  │
-│  │  hospital_db                                                  │  │
-│  │  ├─ sys_user          (用户表)                                │  │
-│  │  ├─ department        (科室表)                                │  │
-│  │  ├─ doctor            (医生表)                                │  │
-│  │  ├─ schedule          (排班表)                                │  │
-│  │  ├─ appointment       (预约表)                                │  │
-│  │  ├─ medical_record    (病历表)                                │  │
-│  │  └─ medicine          (药品表)                                │  │
+│  │  【基础数据】                                                  │  │
+│  │  sys_user · department · doctor · medicine                    │  │
+│  │                                                               │  │
+│  │  【预约业务】                                                  │  │
+│  │  schedule · appointment · medical_record                     │  │
+│  │                                                               │  │
+│  │  【问诊业务】 ✨                                               │  │
+│  │  consultation · consultation_message                          │  │
+│  │  prescription · prescription_item                             │  │
 │  └──────────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -122,23 +120,25 @@
 │                         横切关注点                                   │
 │  ┌──────────────────────────────────────────────────────────────┐  │
 │  │  Spring Security + JWT 认证授权                               │  │
-│  │  ├─ JwtAuthenticationFilter  - JWT令牌验证过滤器              │  │
-│  │  ├─ JwtUtil                  - JWT生成与解析工具              │  │
-│  │  └─ SecurityConfig           - 安全配置（CORS、路由权限）     │  │
+│  │  ├─ JwtAuthenticationFilter  - JWT令牌验证（userId→principal）│  │
+│  │  ├─ JwtUtil                  - Token生成/解析/校验            │  │
+│  │  ├─ SecurityUtils ✨          - 全局获取当前用户ID/用户名/角色  │  │
+│  │  └─ SecurityConfig           - CORS + 路由权限 + 无状态会话   │  │
 │  └──────────────────────────────────────────────────────────────┘  │
 │                                                                       │
 │  ┌──────────────────────────────────────────────────────────────┐  │
 │  │  MyBatis Plus 增强功能                                        │  │
-│  │  ├─ MybatisPlusConfig    - 分页插件配置                       │  │
-│  │  ├─ MyMetaObjectHandler  - 自动填充(createdAt, updatedAt)    │  │
+│  │  ├─ MybatisPlusConfig    - 分页插件 (MariaDB方言)             │  │
+│  │  ├─ MyMetaObjectHandler  - 自动填充(createdAt/updatedAt)     │  │
 │  │  └─ @TableLogic          - 逻辑删除                           │  │
 │  └──────────────────────────────────────────────────────────────┘  │
 │                                                                       │
 │  ┌──────────────────────────────────────────────────────────────┐  │
 │  │  通用组件                                                      │  │
-│  │  ├─ Result<T>            - 统一返回结果封装                    │  │
-│  │  ├─ DTO类                - 数据传输对象                       │  │
-│  │  └─ Entity类             - 实体类（ORM映射）                  │  │
+│  │  ├─ Result<T>            - 统一返回 {code, message, data}     │  │
+│  │  ├─ PageResult<T> ✨     - 分页响应 {total, pageNum, list}    │  │
+│  │  ├─ DTO/VO 类 (21个)      - 数据传输与视图对象                │  │
+│  │  └─ Entity 类 (11个)      - ORM 实体映射                      │  │
 │  └──────────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -147,57 +147,63 @@
 
 ## AJAX请求流程图
 
-### 示例1：预约挂号流程（级联AJAX请求）
+### 流程一：预约挂号（四级级联）
 
 ```
-用户操作流程                          AJAX请求序列
-─────────────                        ────────────
+用户操作                          AJAX请求序列
+─────────                        ────────────
 
-1. 选择科室                          ┌──────────────────────┐
-   ↓                                 │ GET /api/            │
-                                     │ departments/list     │
-   [下拉框加载科室列表] ←────────────┤                      │
-                                     └──────────────────────┘
+1. 进入页面                       GET /api/departments/list
+   [加载科室下拉框]  ←────────────  (动态加载科室)
 
-2. 选择医生                          ┌──────────────────────┐
-   ↓                                 │ GET /api/doctors/    │
-                                     │ by-department/{id}   │
-   [下拉框加载医生列表] ←────────────┤                      │
-                                     └──────────────────────┘
+2. 选择科室                       GET /api/doctors/by-department/{deptId}
+   [加载医生下拉框]  ←────────────  (级联查询医生)
 
-3. 选择日期                          ┌──────────────────────┐
-   ↓                                 │ GET /api/schedules/  │
-                                     │ by-doctor-and-date   │
-   [下拉框加载时间段] ←──────────────┤ ?doctorId=&date=     │
-   [显示剩余号源]                     └──────────────────────┘
+3. 选择日期 + 医生                GET /api/schedules/by-doctor-and-date
+   [加载时间段列表]  ←────────────  (查询可用号源)
+   [显示剩余号源数]
 
-4. 填写症状                          (无请求)
-   ↓
+4. 填写症状描述                   (无请求)
 
-5. 提交预约                          ┌──────────────────────┐
-   ↓                                 │ POST /api/           │
-                                     │ appointments/create  │
-   [显示预约成功] ←──────────────────┤ {body: JSON}         │
-   [显示预约号]                       └──────────────────────┘
+5. 点击提交                       POST /api/appointments/create
+   [显示预约号]      ←────────────  (事务：减少号源 + 创建预约)
 ```
 
-### 示例2：实时搜索流程
+### 流程二：在线问诊聊天
+
+```
+用户操作                          AJAX请求序列
+─────────                        ────────────
+
+1. 发起问诊                       POST /api/consultations/create
+   选择科室→医生→症状              (创建问诊记录 + 系统消息)
+   [进入聊天界面]    ←────────────
+
+2. 发送消息                       POST /api/consultations/{id}/message
+   [消息发出]        ←────────────  (插入消息 + 返回VO)
+
+3. 轮询新消息(每3秒)              GET /api/consultations/{id}/messages?afterMessageId=X
+   [收到新消息]      ←────────────  (只返回新增消息，增量更新DOM)
+
+4. 医生开具处方                   POST /api/prescriptions/create
+   [处方卡片嵌入]    ←────────────  (关联药品 + 计算金额 + 处方消息)
+
+5. 点击处方卡片                   GET /api/prescriptions/{id}
+   [模态框显示详情]  ←────────────  (含药品明细表格)
+```
+
+### 流程三：实时搜索
 
 ```
 用户输入关键字
      ↓
-[onkeyup事件触发]
+[onkeyup 事件触发]
      ↓
-┌──────────────────────────────────────┐
-│ AJAX GET /api/departments/search     │
-│       ?keyword=内科                   │
-└──────────────────────────────────────┘
+AJAX GET /api/departments/search?keyword=内科
      ↓
-[接收JSON响应]
+[接收 JSON 响应]
      ↓
-[动态更新DOM显示搜索结果]
-     ↓
-(无需刷新页面)
+[动态更新 DOM，无需刷新页面]
 ```
 
 ---
@@ -205,78 +211,128 @@
 ## 数据流向图
 
 ```
-┌──────────┐     HTTP Request     ┌────────────┐
-│ Browser  │ ───────────────────→ │ Controller │
-│ (Client) │                       │ (Web层)    │
-└──────────┘                       └─────┬──────┘
-     ↑                                   │ 调用
-     │          JSON Response            ▼
-     │ ◄───────────────────────  ┌────────────┐
-     │                           │  Service   │
-     │                           │ (业务层)   │
-     │                           └─────┬──────┘
-     │                                 │ 调用
-     │                                 ▼
-     │                           ┌────────────┐
-     │                           │   Mapper   │
-     │                           │ (持久层)   │
-     │                           └─────┬──────┘
-     │                                 │ SQL
-     │                                 ▼
-     │                           ┌────────────┐
-     │                           │  Database  │
-     │                           │ (MariaDB)  │
-     │                           └────────────┘
+┌──────────┐   HTTP + JWT    ┌────────────┐   @Autowired   ┌────────────┐
+│ Browser  │ ───────────────→ │ Controller │ ─────────────→ │  Service   │
+│ (Client) │                  │  (7个)     │                │  (8个Impl) │
+└──────────┘                  └────────────┘                └─────┬──────┘
+     ↑                             ↑                              │
+     │       JSON Response         │      统一返回 Result<T>       │
+     │ ◄───────────────────────────┘                              │
+     │                                                            ▼
+     │                                                     ┌────────────┐
+     │                                                     │   Mapper   │
+     │                                                     │  (11个)    │
+     │                                                     └─────┬──────┘
+     │                                                           │ SQL
+     │                                                           ▼
+     │                                                     ┌────────────┐
+     │                                                     │  Database  │
+     │                                                     │ (11张表)   │
+     │                                                     └────────────┘
      │
-     │  完整的数据流：
-     │  1. 用户操作触发AJAX请求
-     │  2. Controller接收请求并验证参数
-     │  3. Service执行业务逻辑
-     │  4. Mapper执行数据库操作
-     │  5. 数据库返回结果
-     │  6. Service处理业务逻辑
-     │  7. Controller封装JSON响应
-     │  8. 前端接收响应并更新DOM
+     │  完整数据流：
+     │  1. 用户操作 → AJAX请求 (XMLHttpRequest + JWT Header)
+     │  2. JwtAuthenticationFilter 解析Token → userId存入SecurityContext
+     │  3. Controller 通过 SecurityUtils.getCurrentUserId() 获取用户
+     │  4. Service 执行业务逻辑 + 事务管理
+     │  5. Mapper 执行数据库操作 (MyBatis Plus BaseMapper)
+     │  6. 结果逐层返回 → Service 组装 VO → Controller 封装 Result
+     │  7. 前端接收 JSON → 动态更新 DOM
 ```
 
 ---
 
-## 关键技术点说明
+## 新增功能架构（v2.0.0）
 
-### 1. 三层架构优势
+### 在线问诊数据模型
 
-| 层级 | 职责 | 技术实现 | 优势 |
-|------|------|----------|------|
-| 表示层 | 接收请求、返回响应 | @RestController + @RequestMapping | 前后端分离、RESTful规范 |
-| 业务逻辑层 | 业务逻辑、事务管理 | @Service + @Transactional | 业务解耦、事务控制 |
-| 数据访问层 | 数据持久化 | @Mapper + MyBatis Plus | ORM映射、简化CRUD |
+```
+consultation (问诊记录)
+├── id, consultation_no, type(TEXT/VIDEO), status(0-3)
+├── patient_id → sys_user
+├── doctor_id  → doctor → sys_user (姓名)
+├── dept_id    → department (科室名)
+└── 1:N → consultation_message (消息)
+    ├── sender_id, sender_type(PATIENT/DOCTOR/SYSTEM)
+    ├── message_type(TEXT/IMAGE/PRESCRIPTION)
+    ├── content, ref_prescription_id → prescription
+    └── 1:N → prescription (处方)
+        ├── prescription_no, diagnosis, advice, total_amount
+        └── 1:N → prescription_item (明细)
+            ├── medicine_id → medicine (药品名/规格/单价)
+            ├── dosage, usage_method, frequency, days, quantity
+            └── subtotal (单价×数量)
+```
 
-### 2. AJAX技术应用
+### SecurityUtils 设计
 
-- **异步性**：无需刷新页面即可与服务器交互
-- **级联查询**：选择科室后自动加载医生，选择医生后自动加载号源
-- **实时验证**：注册时实时检查用户名是否可用
-- **动态加载**：科室列表、医生列表按需加载
-- **用户体验**：流畅的交互体验，无页面闪烁
+```
+JwtAuthenticationFilter
+    │
+    │ 解析 JWT Token 得到 userId, username, role
+    │ 设置 principal = userId (Long)
+    │ 设置 details  = {userId, username, role} (Map)
+    ▼
+SecurityUtils (静态工具类)
+    ├── getCurrentUserId()    → principal (Long)
+    ├── getCurrentUsername()  → 从 details Map 获取
+    └── getCurrentUserRole()  → 从 details Map 获取
+    │
+    │ 被以下组件调用：
+    ├── AppointmentController.getCurrentUserId()
+    ├── ConsultationController (通过 SecurityUtils)
+    ├── AppointmentServiceImpl.getCurrentUserId()
+    ├── ConsultationServiceImpl.createConsultation()
+    ├── PrescriptionServiceImpl.createPrescription()
+    └── UserServiceImpl.getCurrentUser()
+```
 
-### 3. 安全机制
+---
 
-- **JWT认证**：基于Token的无状态认证
-- **密码加密**：BCryptPasswordEncoder加密存储
-- **CORS配置**：跨域资源共享控制
-- **SQL注入防护**：MyBatis预编译语句
-- **XSS防护**：输入验证和输出转义
+## API 端点汇总
+
+### 预约模块
+| 方法 | 端点 | 认证 | 说明 |
+|------|------|------|------|
+| POST | /api/auth/login | 公开 | 登录 |
+| POST | /api/auth/register | 公开 | 注册 |
+| GET | /api/auth/check-username | 公开 | 用户名查重 |
+| GET | /api/departments/list | 公开 | 科室列表 |
+| GET | /api/doctors/list | 公开 | 医生列表 |
+| GET | /api/schedules/by-doctor-and-date | 公开 | 号源查询 |
+| POST | /api/appointments/create | JWT | 创建预约 |
+| GET | /api/appointments/my-list | JWT | 我的预约 |
+| POST | /api/appointments/{id}/cancel | JWT | 取消预约 |
+| POST | /api/appointments/{id}/reschedule | JWT | 改签预约 |
+
+### 问诊模块 ✨
+| 方法 | 端点 | 认证 | 说明 |
+|------|------|------|------|
+| POST | /api/consultations/create | JWT | 发起问诊 |
+| GET | /api/consultations/my-list | JWT | 问诊列表 |
+| GET | /api/consultations/{id} | JWT | 问诊详情 |
+| POST | /api/consultations/{id}/message | JWT | 发送消息 |
+| GET | /api/consultations/{id}/messages | JWT | 轮询新消息 |
+| POST | /api/consultations/{id}/accept | JWT | 医生接诊 |
+| POST | /api/consultations/{id}/finish | JWT | 结束问诊 |
+| POST | /api/prescriptions/create | JWT | 开具处方 |
+| GET | /api/prescriptions/{id} | JWT | 处方详情 |
+
+### 静态页面
+| 路径 | 说明 |
+|------|------|
+| / | index.html (SPA 主页) |
+| /video-consultation.html | 视频问诊施工中页面 |
 
 ---
 
 ## 总结
 
-本项目严格按照三层架构设计，充分应用AJAX技术，实现了：
+本项目严格按照三层架构设计，充分应用AJAX技术：
 
-✅ **清晰的层次结构**：Controller → Service → Mapper  
-✅ **充分的AJAX应用**：10+个异步交互场景  
-✅ **规范的代码实现**：注释完整、命名规范  
-✅ **良好的用户体验**：无刷新操作、实时反馈  
-✅ **完善的安全机制**：JWT认证、密码加密  
-
-符合课程考核要求，适合作为个人项目作品展示。
+✅ **清晰的层次结构**：Controller(7) → Service(8) → Mapper(11)  
+✅ **充分的AJAX应用**：20+ 个异步交互场景  
+✅ **完善的业务闭环**：挂号 → 问诊 → 处方 → 药品  
+✅ **统一的认证体系**：JWT + SecurityUtils 全局可用  
+✅ **现代化前端**：聊天气泡、渐变动画、响应式布局  
+✅ **规范的代码实现**：注释完整、命名规范、事务控制

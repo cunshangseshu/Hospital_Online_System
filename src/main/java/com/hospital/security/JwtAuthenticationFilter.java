@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * JWT认证过滤器
@@ -36,9 +38,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String username = jwtUtil.getUsernameFromToken(token);
                 String role = jwtUtil.getRoleFromToken(token);
 
+                // 将userId、username、role存入details，userId作为principal
+                Map<String, Object> detailsMap = new HashMap<>();
+                detailsMap.put("userId", userId);
+                detailsMap.put("username", username);
+                detailsMap.put("role", role);
+
+                // 使用userId作为principal，便于SecurityUtils.getCurrentUserId()获取
                 UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(username, null, new ArrayList<>());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    new UsernamePasswordAuthenticationToken(userId, null, new ArrayList<>());
+                authentication.setDetails(detailsMap);
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }

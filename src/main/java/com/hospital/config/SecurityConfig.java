@@ -17,7 +17,6 @@ import java.util.Arrays;
 
 /**
  * Spring Security配置类
- * 注：本项目使用明文密码存储，仅用于教学演示目的
  */
 @Configuration
 @EnableWebSecurity
@@ -43,8 +42,9 @@ public class SecurityConfig {
                 .antMatchers("/api/departments/**").permitAll()
                 .antMatchers("/api/doctors/**").permitAll()
                 .antMatchers("/api/schedules/**").permitAll()
+                .antMatchers("/api/service/faqs/**").permitAll()
                 // 静态资源
-                .antMatchers("/", "/index.html", "/css/**", "/js/**", "/images/**").permitAll()
+                .antMatchers("/", "/index.html", "/video-consultation.html", "/css/**", "/js/**", "/images/**").permitAll()
                 // 其他接口需要认证
                 .anyRequest().authenticated()
             .and()
