@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智慧医院管理系统</title>
+    <title>智慧医院管理系统 - 温馨医疗服务</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
     <nav class="navbar">
         <div class="container">
             <div class="logo">
-                <h1>智慧医院管理系统</h1>
+                <h1><span class="medical-cross"></span> 智慧医院</h1>
             </div>
             <ul class="nav-menu" id="navMenu">
                 <li><a href="#" onclick="showPage('home')" class="active">首页</a></li>
@@ -29,25 +29,29 @@
 
     <!-- 首页 -->
     <div id="home" class="page active">
-        <div class="hero">
+        <div class="hero breathe">
             <div class="container">
-                <h2>为您提供优质的医疗服务</h2>
-                <p>专业医生团队 · 便捷预约挂号 · 全程贴心服务</p>
-                <button class="btn btn-primary" onclick="showPage('appointment')">立即预约</button>
+                <div class="medical-icon">🏥</div>
+                <h2>为您提供温馨的医疗服务</h2>
+                <p>专业医生团队 · 便捷预约挂号 · 全程贴心关怀</p>
+                <button class="btn btn-primary pulse" onclick="showPage('appointment')">立即预约</button>
             </div>
         </div>
-        <div class="features container">
+        <div class="features container fade-in">
             <div class="feature-card">
+                <div style="font-size: 40px; margin-bottom: 15px;">📅</div>
                 <h3>在线预约</h3>
-                <p>随时随地预约挂号，无需排队等待</p>
+                <p>随时随地预约挂号，无需排队等待，享受便捷就医体验</p>
             </div>
             <div class="feature-card">
+                <div style="font-size: 40px; margin-bottom: 15px;">👨‍⚕️</div>
                 <h3>专家团队</h3>
-                <p>汇聚各科名医，为您提供专业服务</p>
+                <p>汇聚各科名医，资深专家坐诊，为您提供专业诊疗服务</p>
             </div>
             <div class="feature-card">
+                <div style="font-size: 40px; margin-bottom: 15px;">💚</div>
                 <h3>健康管理</h3>
-                <p>建立健康档案，跟踪健康状况</p>
+                <p>建立个人健康档案，持续跟踪健康状况，守护您的每一天</p>
             </div>
         </div>
     </div>
@@ -55,9 +59,9 @@
     <!-- 科室介绍页 -->
     <div id="departments" class="page">
         <div class="container">
-            <h2>科室介绍</h2>
+            <h2 style="text-align: center; color: hsl(var(--medical-blue)); margin-bottom: 30px; font-size: 32px;">科室介绍</h2>
             <div class="search-box">
-                <input type="text" id="deptSearch" placeholder="搜索科室..." onkeyup="searchDepartments()">
+                <input type="text" id="deptSearch" placeholder="搜索科室名称..." onkeyup="searchDepartments()">
             </div>
             <div id="departmentList" class="grid-list">
                 <!-- AJAX动态加载科室列表 -->
@@ -68,12 +72,12 @@
     <!-- 医生团队页 -->
     <div id="doctors" class="page">
         <div class="container">
-            <h2>医生团队</h2>
+            <h2 style="text-align: center; color: hsl(var(--medical-blue)); margin-bottom: 30px; font-size: 32px;">医生团队</h2>
             <div class="filter-box">
                 <select id="deptFilter" onchange="loadDoctorsByDept()">
                     <option value="">全部科室</option>
                 </select>
-                <input type="text" id="doctorSearch" placeholder="搜索医生或擅长领域..." onkeyup="searchDoctors()">
+                <input type="text" id="doctorSearch" placeholder="搜索医生姓名或擅长领域..." onkeyup="searchDoctors()">
             </div>
             <div id="doctorList" class="grid-list">
                 <!-- AJAX动态加载医生列表 -->
@@ -84,7 +88,7 @@
     <!-- 预约挂号页 -->
     <div id="appointment" class="page">
         <div class="container">
-            <h2>预约挂号</h2>
+            <h2 style="text-align: center; color: hsl(var(--medical-blue)); margin-bottom: 30px; font-size: 32px;">预约挂号</h2>
             <div class="appointment-form">
                 <div class="form-group">
                     <label>选择科室：</label>
@@ -111,7 +115,7 @@
                 </div>
                 <div class="form-group">
                     <label>症状描述：</label>
-                    <textarea id="symptom" rows="4" placeholder="请简要描述您的症状..."></textarea>
+                    <textarea id="symptom" rows="4" placeholder="请简要描述您的症状，方便医生提前了解..."></textarea>
                 </div>
                 <button class="btn btn-primary" onclick="submitAppointment()">提交预约</button>
             </div>
@@ -131,43 +135,43 @@
                 <form id="loginForm" class="auth-form active">
                     <div class="form-group">
                         <label>用户名：</label>
-                        <input type="text" id="loginUsername" required>
+                        <input type="text" id="loginUsername" required placeholder="请输入用户名">
                     </div>
                     <div class="form-group">
                         <label>密码：</label>
-                        <input type="password" id="loginPassword" required>
+                        <input type="password" id="loginPassword" required placeholder="请输入密码">
                     </div>
-                    <button type="submit" class="btn btn-primary">登录</button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">登录</button>
                 </form>
 
                 <!-- 注册表单 -->
                 <form id="registerForm" class="auth-form">
                     <div class="form-group">
                         <label>用户名：</label>
-                        <input type="text" id="regUsername" required onblur="checkUsername()">
+                        <input type="text" id="regUsername" required onblur="checkUsername()" placeholder="3-20位字母数字下划线">
                         <span id="usernameTip" class="tip"></span>
                     </div>
                     <div class="form-group">
                         <label>密码：</label>
-                        <input type="password" id="regPassword" required>
+                        <input type="password" id="regPassword" required placeholder="至少6位密码">
                     </div>
                     <div class="form-group">
                         <label>确认密码：</label>
-                        <input type="password" id="regPasswordConfirm" required>
+                        <input type="password" id="regPasswordConfirm" required placeholder="再次输入密码">
                     </div>
                     <div class="form-group">
                         <label>真实姓名：</label>
-                        <input type="text" id="regRealName" required>
+                        <input type="text" id="regRealName" required placeholder="请输入真实姓名">
                     </div>
                     <div class="form-group">
                         <label>手机号：</label>
-                        <input type="tel" id="regPhone" required>
+                        <input type="tel" id="regPhone" required placeholder="请输入手机号码">
                     </div>
                     <div class="form-group">
                         <label>邮箱：</label>
-                        <input type="email" id="regEmail">
+                        <input type="email" id="regEmail" placeholder="选填，用于接收通知">
                     </div>
-                    <button type="submit" class="btn btn-primary">注册</button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">注册</button>
                 </form>
             </div>
         </div>
