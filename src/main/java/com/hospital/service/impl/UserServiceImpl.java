@@ -10,7 +10,6 @@ import com.hospital.mapper.UserMapper;
 import com.hospital.service.UserService;
 import com.hospital.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -19,9 +18,6 @@ import org.springframework.util.StringUtils;
  */
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -34,10 +30,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new RuntimeException("用户名已存在");
         }
 
-        // 创建新用户
+        // 创建新用户（明文密码存储）
         User user = new User();
         user.setUsername(request.getUsername());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPassword(request.getPassword()); // 明文存储
         user.setRealName(request.getRealName());
         user.setPhone(request.getPhone());
         user.setEmail(request.getEmail());
@@ -57,8 +53,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new RuntimeException("用户不存在");
         }
 
-        // 验证密码
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        // 验证密码（明文对比）
+        if (!request.getPassword().equals(user.getPassword())) {
             throw new RuntimeException("密码错误");
         }
 

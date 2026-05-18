@@ -169,9 +169,9 @@ CREATE TABLE IF NOT EXISTS medicine (
 -- 插入测试数据
 -- ========================================
 
--- 插入默认管理员账户 (密码: admin123)
+-- 插入默认管理员账户 (密码: admin123 - 明文存储)
 INSERT INTO sys_user (username, password, real_name, phone, email, role, status) VALUES
-('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lqkkO9QS3TzCjH3rS', '系统管理员', '13800138000', 'admin@hospital.com', 'ADMIN', 1);
+('admin', 'admin123', '系统管理员', '13800138000', 'admin@hospital.com', 'ADMIN', 1);
 
 -- 插入测试科室
 INSERT INTO department (dept_name, dept_code, description, location, phone, status, sort_order) VALUES
@@ -182,10 +182,10 @@ INSERT INTO department (dept_name, dept_code, description, location, phone, stat
 ('眼科', 'YK', '眼科诊疗', '门诊楼6层', '020-12345005', 1, 5),
 ('口腔科', 'KQK', '口腔科诊疗', '门诊楼7层', '020-12345006', 1, 6);
 
--- 插入测试医生用户
+-- 插入测试医生用户 (密码: admin123 - 明文存储)
 INSERT INTO sys_user (username, password, real_name, phone, email, role, status) VALUES
-('doctor1', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lqkkO9QS3TzCjH3rS', '张医生', '13800138001', 'doctor1@hospital.com', 'DOCTOR', 1),
-('doctor2', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lqkkO9QS3TzCjH3rS', '李医生', '13800138002', 'doctor2@hospital.com', 'DOCTOR', 1);
+('doctor1', 'admin123', '张医生', '13800138001', 'doctor1@hospital.com', 'DOCTOR', 1),
+('doctor2', 'admin123', '李医生', '13800138002', 'doctor2@hospital.com', 'DOCTOR', 1);
 
 -- 插入测试医生信息
 INSERT INTO doctor (user_id, dept_id, title, specialty, education, experience, introduction, consultation_fee, rating, status) VALUES
