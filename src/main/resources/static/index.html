@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧医院管理系统</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <h1>智慧医院管理系统</h1>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#" onclick="showPage('home')" class="active">首页</a></li>
+                <li><a href="#" onclick="showPage('departments')">科室介绍</a></li>
+                <li><a href="#" onclick="showPage('doctors')">医生团队</a></li>
+                <li><a href="#" onclick="showPage('appointment')">预约挂号</a></li>
+                <li id="loginNav"><a href="#" onclick="showPage('login')">登录/注册</a></li>
+                <li id="userNav" style="display:none;">
+                    <span id="userName"></span>
+                    <a href="#" onclick="logout()">退出</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 首页 -->
+    <div id="home" class="page active">
+        <div class="hero">
+            <div class="container">
+                <h2>为您提供优质的医疗服务</h2>
+                <p>专业医生团队 · 便捷预约挂号 · 全程贴心服务</p>
+                <button class="btn btn-primary" onclick="showPage('appointment')">立即预约</button>
+            </div>
+        </div>
+        <div class="features container">
+            <div class="feature-card">
+                <h3>在线预约</h3>
+                <p>随时随地预约挂号，无需排队等待</p>
+            </div>
+            <div class="feature-card">
+                <h3>专家团队</h3>
+                <p>汇聚各科名医，为您提供专业服务</p>
+            </div>
+            <div class="feature-card">
+                <h3>健康管理</h3>
+                <p>建立健康档案，跟踪健康状况</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 科室介绍页 -->
+    <div id="departments" class="page">
+        <div class="container">
+            <h2>科室介绍</h2>
+            <div class="search-box">
+                <input type="text" id="deptSearch" placeholder="搜索科室..." onkeyup="searchDepartments()">
+            </div>
+            <div id="departmentList" class="grid-list">
+                <!-- AJAX动态加载科室列表 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 医生团队页 -->
+    <div id="doctors" class="page">
+        <div class="container">
+            <h2>医生团队</h2>
+            <div class="filter-box">
+                <select id="deptFilter" onchange="loadDoctorsByDept()">
+                    <option value="">全部科室</option>
+                </select>
+                <input type="text" id="doctorSearch" placeholder="搜索医生或擅长领域..." onkeyup="searchDoctors()">
+            </div>
+            <div id="doctorList" class="grid-list">
+                <!-- AJAX动态加载医生列表 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 预约挂号页 -->
+    <div id="appointment" class="page">
+        <div class="container">
+            <h2>预约挂号</h2>
+            <div class="appointment-form">
+                <div class="form-group">
+                    <label>选择科室：</label>
+                    <select id="appointDept" onchange="loadDoctorsForAppointment()">
+                        <option value="">请选择科室</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>选择医生：</label>
+                    <select id="appointDoctor" onchange="loadSchedules()" disabled>
+                        <option value="">请先选择科室</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>选择日期：</label>
+                    <input type="date" id="appointDate" onchange="loadSchedules()">
+                </div>
+                <div class="form-group">
+                    <label>时间段：</label>
+                    <select id="appointTimeSlot" disabled>
+                        <option value="">请先选择医生和日期</option>
+                    </select>
+                    <span id="slotInfo" class="slot-info"></span>
+                </div>
+                <div class="form-group">
+                    <label>症状描述：</label>
+                    <textarea id="symptom" rows="4" placeholder="请简要描述您的症状..."></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="submitAppointment()">提交预约</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录/注册页 -->
+    <div id="login" class="page">
+        <div class="container">
+            <div class="auth-box">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('login')">登录</button>
+                    <button class="tab" onclick="switchTab('register')">注册</button>
+                </div>
+
+                <!-- 登录表单 -->
+                <form id="loginForm" class="auth-form active">
+                    <div class="form-group">
+                        <label>用户名：</label>
+                        <input type="text" id="loginUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label>密码：</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">登录</button>
+                </form>
+
+                <!-- 注册表单 -->
+                <form id="registerForm" class="auth-form">
+                    <div class="form-group">
+                        <label>用户名：</label>
+                        <input type="text" id="regUsername" required onblur="checkUsername()">
+                        <span id="usernameTip" class="tip"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>密码：</label>
+                        <input type="password" id="regPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label>确认密码：</label>
+                        <input type="password" id="regPasswordConfirm" required>
+                    </div>
+                    <div class="form-group">
+                        <label>真实姓名：</label>
+                        <input type="text" id="regRealName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>手机号：</label>
+                        <input type="tel" id="regPhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label>邮箱：</label>
+                        <input type="email" id="regEmail">
+                    </div>
+                    <button type="submit" class="btn btn-primary">注册</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示消息 -->
+    <div id="message" class="message"></div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>
