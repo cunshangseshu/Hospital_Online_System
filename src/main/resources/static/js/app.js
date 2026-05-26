@@ -113,6 +113,7 @@ function showMessage(msg, type) {
 function loadDepartments() {
     ajaxGet('/departments/list', function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -136,6 +137,7 @@ function searchDepartments() {
 
     ajaxGet('/departments/search?keyword=' + encodeURIComponent(keyword), function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -173,6 +175,7 @@ function displayDepartments(departments) {
 function loadDoctors() {
     ajaxGet('/doctors/list', function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -194,6 +197,7 @@ function loadDoctorsByDept() {
 
     ajaxGet('/doctors/by-department/' + deptId, function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -215,6 +219,7 @@ function searchDoctors() {
 
     ajaxGet('/doctors/search?keyword=' + encodeURIComponent(keyword), function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -253,6 +258,7 @@ function displayDoctors(doctors) {
 function loadDeptFilter() {
     ajaxGet('/departments/list', function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -272,6 +278,7 @@ function loadDeptFilter() {
 function loadAppointmentDepts() {
     ajaxGet('/departments/list', function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -299,6 +306,7 @@ function loadDoctorsForAppointment() {
     // AJAX请求获取该科室的医生
     ajaxGet('/doctors/by-department/' + deptId, function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -390,6 +398,7 @@ function submitAppointment() {
 
     ajaxPost('/appointments/create', data, function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -455,13 +464,12 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
 
     ajaxPost('/auth/login', { username, password }, function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
             }
-            currentUser = response.data;
-            localStorage.setItem('token', response.data.token);
-            localStorage.setItem('user', JSON.stringify(response.data));
+            
 
             showMessage('登录成功！', 'success');
             updateNavForLogin();
@@ -497,6 +505,7 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
 
     ajaxPost('/auth/register', data, function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -583,6 +592,7 @@ function loadMyAppointments() {
 
     ajaxGet(url, function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -691,6 +701,7 @@ function changePage(page) {
 function showAppointmentDetail(id) {
     ajaxGet(`/appointments/${id}`, function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -787,6 +798,7 @@ function cancelAppointment() {
 
     ajaxPost(`/appointments/${currentAppointmentId}/cancel`, { cancelReason: cancelReason.trim() }, function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -809,6 +821,7 @@ function rescheduleAppointment() {
     // 获取预约详情
     ajaxGet(`/appointments/${currentAppointmentId}`, function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -917,6 +930,7 @@ function loadMyConsultations() {
 
     ajaxGet(url, function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -983,6 +997,7 @@ function startTextConsultation() {
     // 加载科室列表
     ajaxGet('/departments/list', function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -1008,6 +1023,7 @@ function loadConsultDoctors() {
 
     ajaxGet('/doctors/by-department/' + deptId, function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -1040,6 +1056,7 @@ function submitConsultation() {
         symptomDescription: symptom
     }, function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -1066,6 +1083,7 @@ function enterChat(consultationId) {
 
     ajaxGet(`/consultations/${consultationId}`, function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -1161,6 +1179,7 @@ function sendConsultMessage() {
         messageType: 'TEXT'
     }, function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
@@ -1251,6 +1270,7 @@ function viewPrescription(prescriptionId) {
 
     ajaxGet(`/prescriptions/${prescriptionId}`, function(response) {
         if (response.code === 200) {
+            currentUser = response.data; localStorage.setItem('token', response.data.token); localStorage.setItem('user', JSON.stringify(response.data));
             if (response.data.role === "DOCTOR") { 
                 window.location.href = "/doctor.html"; 
                 return; 
