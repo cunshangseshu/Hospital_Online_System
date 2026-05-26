@@ -2,11 +2,16 @@ package com.hospital.controller;
 
 import com.hospital.common.Result;
 import com.hospital.entity.Department;
+import com.hospital.entity.User;
 import com.hospital.service.DepartmentService;
+import com.hospital.service.UserService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * 科室控制器 - 处理科室相关AJAX请求
@@ -18,6 +23,9 @@ public class DepartmentController {
 
     @Autowired
     private DepartmentService departmentService;
+
+    @Autowired
+    private UserService userService;
 
     /**
      * 获取所有启用的科室列表（AJAX动态加载）
@@ -38,11 +46,26 @@ public class DepartmentController {
     }
 
     /**
-     * 根据ID获取科室详情
+     * 根据ID获取科室详情及所属名医
      */
     @GetMapping("/{id}")
-    public Result<Department> getById(@PathVariable Long id) {
+    public Result<Map<String, Object>> getById(@PathVariable Long id) {
         Department department = departmentService.getById(id);
-        return Result.success(department);
+        if (department == null) {
+            return Result.error("该科室不存在");
+        }
+        
+        QueryWrapper<User> doctorQa = new QueryWrapper<>();
+        doctorQa.eq("department_id", id)
+                .eq("role", "DOCTOR")
+                .eq("status", 1);
+                
+        List<User> doctors = userService.list(doctorQa);
+        
+        Map<String, Object> data = new HashMap<>();
+        data.put("department", department);
+        data.put("doctors", doctors);
+        
+        return Result.success(data);
     }
 }
