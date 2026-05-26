@@ -19,10 +19,11 @@ public interface DoctorWorkspaceMapper {
     /**
      * 查询医生基础信息与科室名称
      */
-    @Select("SELECT u.real_name AS realName, u.title, d.dept_name AS departmentName, u.phone, " +
+    @Select("SELECT u.real_name AS realName, doc.title, d.dept_name AS departmentName, u.phone, " +
             "CASE WHEN u.status = 1 THEN '在职' ELSE '离职' END AS status " +
             "FROM sys_user u " +
-            "LEFT JOIN department d ON u.department_id = d.id " +
+            "LEFT JOIN doctor doc ON u.id = doc.user_id " +
+            "LEFT JOIN department d ON doc.dept_id = d.id " +
             "WHERE u.id = #{doctorId} AND u.role = 'DOCTOR'")
     DoctorBaseInfoVO getDoctorBaseInfo(@Param("doctorId") Long doctorId);
 
