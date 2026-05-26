@@ -113,6 +113,10 @@ function showMessage(msg, type) {
 function loadDepartments() {
     ajaxGet('/departments/list', function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             displayDepartments(response.data);
         } else {
             showMessage(response.message, 'error');
@@ -132,6 +136,10 @@ function searchDepartments() {
 
     ajaxGet('/departments/search?keyword=' + encodeURIComponent(keyword), function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             displayDepartments(response.data);
         }
     });
@@ -165,6 +173,10 @@ function displayDepartments(departments) {
 function loadDoctors() {
     ajaxGet('/doctors/list', function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             displayDoctors(response.data);
         }
     });
@@ -182,6 +194,10 @@ function loadDoctorsByDept() {
 
     ajaxGet('/doctors/by-department/' + deptId, function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             displayDoctors(response.data);
         }
     });
@@ -199,6 +215,10 @@ function searchDoctors() {
 
     ajaxGet('/doctors/search?keyword=' + encodeURIComponent(keyword), function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             displayDoctors(response.data);
         }
     });
@@ -233,6 +253,10 @@ function displayDoctors(doctors) {
 function loadDeptFilter() {
     ajaxGet('/departments/list', function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             const select = document.getElementById('deptFilter');
             select.innerHTML = '<option value="">全部科室</option>' +
                 response.data.map(dept => `<option value="${dept.id}">${dept.deptName}</option>`).join('');
@@ -248,6 +272,10 @@ function loadDeptFilter() {
 function loadAppointmentDepts() {
     ajaxGet('/departments/list', function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             const select = document.getElementById('appointDept');
             select.innerHTML = '<option value="">请选择科室</option>' +
                 response.data.map(dept => `<option value="${dept.id}">${dept.deptName}</option>`).join('');
@@ -271,6 +299,10 @@ function loadDoctorsForAppointment() {
     // AJAX请求获取该科室的医生
     ajaxGet('/doctors/by-department/' + deptId, function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             doctorSelect.innerHTML = '<option value="">请选择医生</option>' +
                 response.data.map(doctor => `<option value="${doctor.id}">${doctor.title}</option>`).join('');
             doctorSelect.disabled = false;
@@ -358,6 +390,10 @@ function submitAppointment() {
 
     ajaxPost('/appointments/create', data, function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             showMessage('预约成功！预约号：' + response.data.appointmentNo, 'success');
             // 清空表单
             document.getElementById('appointDept').value = '';
@@ -419,6 +455,10 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
 
     ajaxPost('/auth/login', { username, password }, function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             currentUser = response.data;
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('user', JSON.stringify(response.data));
@@ -457,6 +497,10 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
 
     ajaxPost('/auth/register', data, function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             showMessage('注册成功！请登录', 'success');
             switchTab('login');
             document.getElementById('registerForm').reset();
@@ -539,6 +583,10 @@ function loadMyAppointments() {
 
     ajaxGet(url, function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             displayMyAppointments(response.data);
         } else {
             showMessage(response.message, 'error');
@@ -643,6 +691,10 @@ function changePage(page) {
 function showAppointmentDetail(id) {
     ajaxGet(`/appointments/${id}`, function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             currentAppointmentId = id;
             const appointment = response.data;
             
@@ -735,6 +787,10 @@ function cancelAppointment() {
 
     ajaxPost(`/appointments/${currentAppointmentId}/cancel`, { cancelReason: cancelReason.trim() }, function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             showMessage('取消成功', 'success');
             closeModal();
             loadMyAppointments();
@@ -753,6 +809,10 @@ function rescheduleAppointment() {
     // 获取预约详情
     ajaxGet(`/appointments/${currentAppointmentId}`, function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             const appointment = response.data;
             
             // 显示改签选择界面
@@ -857,6 +917,10 @@ function loadMyConsultations() {
 
     ajaxGet(url, function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             displayConsultationList(response.data);
         } else {
             showMessage(response.message, 'error');
@@ -919,6 +983,10 @@ function startTextConsultation() {
     // 加载科室列表
     ajaxGet('/departments/list', function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             const select = document.getElementById('consultDept');
             select.innerHTML = '<option value="">请选择科室</option>' +
                 response.data.map(d => `<option value="${d.id}">${d.deptName}</option>`).join('');
@@ -940,6 +1008,10 @@ function loadConsultDoctors() {
 
     ajaxGet('/doctors/by-department/' + deptId, function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             doctorSelect.innerHTML = '<option value="">请选择医生</option>' +
                 response.data.map(d => `<option value="${d.id}">${d.title}</option>`).join('');
             doctorSelect.disabled = false;
@@ -968,6 +1040,10 @@ function submitConsultation() {
         symptomDescription: symptom
     }, function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             showMessage('问诊发起成功！', 'success');
             closeStartConsultModal();
             document.getElementById('consultDept').value = '';
@@ -990,6 +1066,10 @@ function enterChat(consultationId) {
 
     ajaxGet(`/consultations/${consultationId}`, function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             const c = response.data;
 
             document.getElementById('consultationList').style.display = 'none';
@@ -1081,6 +1161,10 @@ function sendConsultMessage() {
         messageType: 'TEXT'
     }, function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             input.value = '';
             // 立即刷新消息
             refreshMessages();
@@ -1167,6 +1251,10 @@ function viewPrescription(prescriptionId) {
 
     ajaxGet(`/prescriptions/${prescriptionId}`, function(response) {
         if (response.code === 200) {
+            if (response.data.role === "DOCTOR") { 
+                window.location.href = "/doctor.html"; 
+                return; 
+            }
             const p = response.data;
             let itemsHtml = (p.items || []).map(i => `
                 <tr>

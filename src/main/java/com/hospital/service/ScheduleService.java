@@ -29,4 +29,14 @@ public interface ScheduleService extends IService<Schedule> {
      * 增加可用号源（取消预约时）
      */
     boolean increaseAvailableSlots(Long scheduleId);
+
+    /**
+     * 为指定日期自动生成排班
+     */
+    void autoGenerateForDate(LocalDate targetDate);
+
+    /**
+     * 批量生成排班
+     */
+    void generateBatchSchedules(Long doctorId, LocalDate startDate, LocalDate endDate, Integer dailySlots);
 }
