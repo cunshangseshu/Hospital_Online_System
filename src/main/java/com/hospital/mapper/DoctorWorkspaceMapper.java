@@ -19,7 +19,7 @@ public interface DoctorWorkspaceMapper {
     /**
      * 查询医生基础信息与科室名称
      */
-    @Select("SELECT u.real_name AS realName, doc.title, d.dept_name AS departmentName, u.phone, " +
+    @Select("SELECT u.id, u.real_name AS realName, doc.title, d.dept_name AS departmentName, u.phone, " +
             "CASE WHEN u.status = 1 THEN '在职' ELSE '离职' END AS status " +
             "FROM sys_user u " +
             "LEFT JOIN doctor doc ON u.id = doc.user_id " +

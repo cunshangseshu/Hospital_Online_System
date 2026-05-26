@@ -1,0 +1,42 @@
+--- src/main/java/com/hospital/dto/TodayStatsVO.java
++++ src/main/java/com/hospital/dto/TodayStatsVO.java
+@@ -8,6 +8,6 @@
+ @Data
+ public class TodayStatsVO {
+-    private Integer pendingCount; // 待接诊
+-    private Integer completedCount; // 已接诊
++    private Integer pendingConsults; // 待接诊
++    private Integer completedConsults; // 已接诊
+ }
+--- src/main/java/com/hospital/dto/DoctorBaseInfoVO.java
++++ src/main/java/com/hospital/dto/DoctorBaseInfoVO.java
+@@ -9,6 +9,7 @@
+ @Data
+ public class DoctorBaseInfoVO {
++    private Long id;
+     private String realName;
+     private String title;
+     private String departmentName;
+--- src/main/java/com/hospital/mapper/DoctorWorkspaceMapper.java
++++ src/main/java/com/hospital/mapper/DoctorWorkspaceMapper.java
+@@ -21,7 +21,7 @@
+      * 查询医生基础信息与科室名称
+      */
+-    @Select("SELECT u.real_name AS realName, doc.title, d.dept_name AS departmentName, u.phone, " +
++    @Select("SELECT u.id, u.real_name AS realName, doc.title, d.dept_name AS departmentName, u.phone, " +
+             "CASE WHEN u.status = 1 THEN '在职' ELSE '离职' END AS status " +
+             "FROM sys_user u " +
+             "LEFT JOIN doctor doc ON u.id = doc.user_id " +
+--- src/main/java/com/hospital/service/impl/DoctorWorkspaceServiceImpl.java
++++ src/main/java/com/hospital/service/impl/DoctorWorkspaceServiceImpl.java
+@@ -37,8 +37,8 @@
+         Integer completedCount = workspaceMapper.getCompletedCount(doctorId, date);
+ 
+         TodayStatsVO todayStats = new TodayStatsVO();
+-        todayStats.setPendingCount(pendingCount != null ? pendingCount : 0);
+-        todayStats.setCompletedCount(completedCount != null ? completedCount : 0);
++        todayStats.setPendingConsults(pendingCount != null ? pendingCount : 0);
++        todayStats.setCompletedConsults(completedCount != null ? completedCount : 0);
+ 
+         // 3. 获取排班情况列表
+         List<ScheduleItemVO> schedules = workspaceMapper.getSchedules(doctorId, date);
