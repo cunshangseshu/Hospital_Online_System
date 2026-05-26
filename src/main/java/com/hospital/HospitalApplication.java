@@ -15,7 +15,7 @@ public class HospitalApplication {
         SpringApplication.run(HospitalApplication.class, args);
         System.out.println("========================================");
         System.out.println("  智慧医院管理系统启动成功！");
-        System.out.println("  访问地址: http://localhost:8080");
+        System.out.println("  访问地址: http://localhost:4060");
         System.out.println("========================================");
     }
 }
