@@ -5,6 +5,7 @@ import com.hospital.dto.DoctorWorkspaceVO;
 import com.hospital.security.SecurityUtils;
 import com.hospital.service.DoctorWorkspaceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -28,7 +29,17 @@ public class DoctorWorkspaceController {
      */
     @GetMapping("/data")
     public Result<DoctorWorkspaceVO> getWorkspaceData(
-            @RequestParam(required = false) LocalDate date) {
+            @RequestParam(required = false, value = "date") 
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+
+        // 参数校验防护：防止恶意传入极其遥远的历史或未来年份，冲击数据库缓存或索引
+        if (date != null) {
+            int year = date.getYear();
+            // 合理的年份跨度：仅允许查询近几年的排班数据，防止跨度过大导致慢查询或缓存击穿
+            if (year < 2020 || year > 2030) {
+                return Result.error("非法参数：查询年份越界 (合法区间 2020~2030)");
+            }
+        }
 
         // 1. 安全校验与强制身份获取
         Long currentUserId = SecurityUtils.getCurrentUserId();
