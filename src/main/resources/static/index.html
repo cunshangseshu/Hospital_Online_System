@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>芯芯数字化在线医疗服务系统 - 温馨医疗服务</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <img src="/images/医院logo.jpg" alt="芯芯数字化在线医疗" class="logo-img">
+                <span class="logo-text">芯芯数字化在线医疗服务系统</span>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#" onclick="showPage('home')" class="active">首页</a></li>
+                <li><a href="#" onclick="showPage('departments')">科室介绍</a></li>
+                <li><a href="#" onclick="showPage('doctors')">医生团队</a></li>
+                <li><a href="#" onclick="showPage('appointment')">预约挂号</a></li>
+                <li><a href="#" onclick="showPage('consultation')">在线问诊</a></li>
+                <li class="nav-dropdown">
+                    <a href="#" onclick="event.preventDefault();this.parentElement.classList.toggle('open')">更多服务 ▼</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" onclick="showPage('myAppointments')">我的预约</a></li>
+                        <li><a href="#" onclick="showPage('reports')">报告查询</a></li>
+                        <li><a href="#" onclick="showPage('healthProfile')">健康档案</a></li>
+                        <li><a href="#" onclick="showPage('hospitalGuide')">就医指南</a></li>
+                        <li><a href="#" onclick="showPage('messages')">消息中心<div class="nav-badge" id="navUnreadBadge" style="display:none;"></div></a></li>
+                        <li><a href="#" onclick="showPage('serviceCenter')">客服中心</a></li>
+                    </ul>
+                </li>
+                <li id="loginNav"><a href="#" onclick="showPage('login')">登录/注册</a></li>
+                <li id="userNav" style="display:none;">
+                    <span id="userName"></span>
+                    <a href="#" onclick="logout()">退出</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 首页 -->
+    <div id="home" class="page active">
+        <div class="hero breathe">
+            <div class="container">
+                <!--<div class="medical-icon">🏥</div>-->
+                <h2>芯芯数字化在线医疗服务系统</h2>
+                <p>专业医生团队 · 便捷预约挂号 · 全程贴心关怀</p>
+                <button class="btn btn-primary pulse" onclick="showPage('appointment')">立即预约</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 科室介绍页 -->
+    <div id="departments" class="page">
+        <div class="container">
+            <h2 style="text-align: center; color: hsl(var(--medical-blue)); margin-bottom: 30px; font-size: 32px;">科室介绍</h2>
+            <div class="search-box">
+                <input type="text" id="deptSearch" placeholder="搜索科室名称..." onkeyup="searchDepartments()">
+            </div>
+            <div id="departmentList" class="grid-list">
+                <!-- AJAX动态加载科室列表 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 医生团队页 -->
+    <div id="doctors" class="page">
+        <div class="container">
+            <h2 style="text-align: center; color: hsl(var(--medical-blue)); margin-bottom: 30px; font-size: 32px;">医生团队</h2>
+            <div class="filter-box">
+                <select id="deptFilter" onchange="loadDoctorsByDept()">
+                    <option value="">全部科室</option>
+                </select>
+                <input type="text" id="doctorSearch" placeholder="搜索医生姓名或擅长领域..." onkeyup="searchDoctors()">
+            </div>
+            <div id="doctorList" class="grid-list">
+                <!-- AJAX动态加载医生列表 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 预约挂号页 -->
+    <div id="appointment" class="page">
+        <div class="container">
+            <h2 style="text-align: center; color: hsl(var(--medical-blue)); margin-bottom: 30px; font-size: 32px;">预约挂号</h2>
+            <div class="appointment-form">
+                <div class="form-group">
+                    <label>选择科室：</label>
+                    <select id="appointDept" onchange="loadDoctorsForAppointment()">
+                        <option value="">请选择科室</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>选择医生：</label>
+                    <select id="appointDoctor" onchange="loadSchedules()" disabled>
+                        <option value="">请先选择科室</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>选择日期：</label>
+                    <input type="date" id="appointDate" onchange="loadSchedules()">
+                </div>
+                <div class="form-group">
+                    <label>时间段：</label>
+                    <select id="appointTimeSlot" disabled>
+                        <option value="">请先选择医生和日期</option>
+                    </select>
+                    <span id="slotInfo" class="slot-info"></span>
+                </div>
+                <div class="form-group">
+                    <label>症状描述：</label>
+                    <textarea id="symptom" rows="4" placeholder="请简要描述您的症状，方便医生提前了解..."></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="submitAppointment()">提交预约</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 在线问诊页 -->
+    <div id="consultation" class="page">
+        <div class="container">
+            <!-- 问诊模式选择 / 问诊列表 -->
+            <div id="consultationList" style="display:block;">
+                <h2 style="text-align: center; color: hsl(var(--medical-blue)); margin-bottom: 10px; font-size: 32px;">在线问诊</h2>
+                <p style="text-align: center; color: hsl(210,10%,45%); margin-bottom: 25px;">足不出户，与专业医生在线交流</p>
+
+                <div style="display:flex; gap:15px; justify-content:center; margin-bottom:30px; flex-wrap:wrap;">
+                    <button class="btn btn-primary" onclick="startTextConsultation()" style="background: var(--gradient-medical); color: white; border: none;">💬 文字问诊</button>
+                    <button class="btn btn-outline" onclick="window.open('/video-consultation.html','_blank')">📹 视频问诊</button>
+                </div>
+
+                <div style="display:flex; gap:10px; justify-content:center; margin-bottom:25px; flex-wrap:wrap;">
+                    <select id="consultStatusFilter" onchange="loadMyConsultations()" style="padding:10px 16px; border-radius:24px; border:2px solid hsl(var(--medical-gray));">
+                        <option value="">全部状态</option>
+                        <option value="0">待接诊</option>
+                        <option value="1">问诊中</option>
+                        <option value="2">已完成</option>
+                        <option value="3">已关闭</option>
+                    </select>
+                </div>
+
+                <div id="consultationListContainer">
+                    <!-- AJAX动态加载问诊列表 -->
+                </div>
+                <div class="pagination" id="consultPagination"></div>
+            </div>
+
+            <!-- 问诊聊天界面 -->
+            <div id="consultationChat" style="display:none;">
+                <div class="chat-header">
+                    <button class="btn-back-chat" onclick="backToList()">← 返回</button>
+                    <div class="chat-doctor-info">
+                        <div class="chat-avatar"></div>
+                        <div>
+                            <div class="chat-doctor-name" id="chatDoctorName"></div>
+                            <div class="chat-doctor-dept" id="chatDoctorDept"></div>
+                        </div>
+                    </div>
+                    <div class="chat-status" id="chatStatus"></div>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <!-- AJAX动态加载消息 -->
+                </div>
+
+                <div class="chat-footer" id="chatFooter">
+                    <textarea id="chatInput" placeholder="输入您的消息..." rows="2"></textarea>
+                    <button class="btn-send" onclick="sendConsultMessage()">发送</button>
+                </div>
+            </div>
+
+            <!-- 发起问诊弹窗 -->
+            <div id="startConsultModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeStartConsultModal()">&times;</span>
+                    <h3 style="color:hsl(var(--medical-blue)); margin-bottom:20px;">发起文字问诊</h3>
+                    <div class="form-group">
+                        <label>选择科室：</label>
+                        <select id="consultDept" onchange="loadConsultDoctors()">
+                            <option value="">请选择科室</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>选择医生：</label>
+                        <select id="consultDoctor" disabled>
+                            <option value="">请先选择科室</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>症状描述：</label>
+                        <textarea id="consultSymptom" rows="4" placeholder="请详细描述您的症状，方便医生提前了解..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="submitConsultation()" style="width:100%;">发起问诊</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 我的预约页 -->
+    <div id="myAppointments" class="page">
+        <div class="container">
+            <h2 style="text-align: center; color: hsl(var(--medical-blue)); margin-bottom: 30px; font-size: 32px;">我的预约</h2>
+            
+            <!-- 筛选框 -->
+            <div class="filter-box">
+                <select id="appointmentStatusFilter" onchange="loadMyAppointments()">
+                    <option value="">全部状态</option>
+                    <option value="PENDING">待确认</option>
+                    <option value="CONFIRMED">已确认</option>
+                    <option value="COMPLETED">已完成</option>
+                    <option value="CANCELLED">已取消</option>
+                </select>
+                <input type="text" id="appointmentSearch" placeholder="搜索预约号或医生姓名..." onkeyup="searchMyAppointments()">
+            </div>
+
+            <!-- 预约列表 -->
+            <div id="appointmentList" class="appointment-list">
+                <!-- AJAX动态加载预约列表 -->
+            </div>
+
+            <!-- 分页 -->
+            <div class="pagination" id="pagination">
+                <!-- 分页按钮 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 预约详情模态框 -->
+    <div id="appointmentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 style="color: hsl(var(--medical-blue)); margin-bottom: 20px;">预约详情</h3>
+            <div id="appointmentDetail"></div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal()">关闭</button>
+                <button class="btn btn-primary" id="cancelBtn" onclick="cancelAppointment()">取消预约</button>
+                <button class="btn btn-primary" id="rescheduleBtn" onclick="rescheduleAppointment()">改签预约</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录/注册页 -->
+    <div id="login" class="page">
+        <div class="container">
+            <div class="auth-box">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('login')">登录</button>
+                    <button class="tab" onclick="switchTab('register')">注册</button>
+                </div>
+
+                <!-- 登录表单 -->
+                <form id="loginForm" class="auth-form active">
+                    <div class="form-group">
+                        <label>用户名：</label>
+                        <input type="text" id="loginUsername" required placeholder="请输入用户名">
+                    </div>
+                    <div class="form-group">
+                        <label>密码：</label>
+                        <input type="password" id="loginPassword" required placeholder="请输入密码">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">登录</button>
+                </form>
+
+                <!-- 注册表单 -->
+                <form id="registerForm" class="auth-form">
+                    <div class="form-group">
+                        <label>用户名：</label>
+                        <input type="text" id="regUsername" required onblur="checkUsername()" placeholder="3-20位字母数字下划线">
+                        <span id="usernameTip" class="tip"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>密码：</label>
+                        <input type="password" id="regPassword" required placeholder="至少6位密码">
+                    </div>
+                    <div class="form-group">
+                        <label>确认密码：</label>
+                        <input type="password" id="regPasswordConfirm" required placeholder="再次输入密码">
+                    </div>
+                    <div class="form-group">
+                        <label>真实姓名：</label>
+                        <input type="text" id="regRealName" required placeholder="请输入真实姓名">
+                    </div>
+                    <div class="form-group">
+                        <label>手机号：</label>
+                        <input type="tel" id="regPhone" required placeholder="请输入手机号码">
+                    </div>
+                    <div class="form-group">
+                        <label>邮箱：</label>
+                        <input type="email" id="regEmail" placeholder="选填，用于接收通知">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">注册</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 报告查询页 -->
+    <div id="reports" class="page">
+        <div class="container">
+            <h2 style="text-align:center;color:hsl(var(--medical-blue));margin-bottom:10px;font-size:32px;">报告查询</h2>
+            <p style="text-align:center;color:hsl(210,10%,45%);margin-bottom:25px;">检验报告 · 影像报告 · 历史对比</p>
+            <div class="report-tabs">
+                <button class="report-tab active" onclick="switchReportTab('lab')">检验报告</button>
+                <button class="report-tab" onclick="switchReportTab('imaging')">影像报告</button>
+            </div>
+            <div id="labReports" class="report-list"></div>
+            <div id="imagingReports" class="report-list" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- 报告详情模态框 -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeReportModal()">&times;</span>
+            <div id="reportDetail"></div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeReportModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 健康档案页 -->
+    <div id="healthProfile" class="page">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h2 style="color:hsl(var(--medical-blue)); font-size:32px; margin: 0;">健康档案</h2>
+                <div id="exportProfileBtnContainer" style="display: none;">
+                    <button id="btnDownloadProfile" class="btn btn-primary" onclick="downloadHealthProfile()">⬇️ 一键下载健康档案 (MD版)</button>
+                </div>
+            </div>
+            <div id="profileContent"><p style="text-align:center;padding:40px;">加载中...</p></div>
+        </div>
+    </div>
+
+    <!-- 就医指南页 -->
+    <div id="hospitalGuide" class="page">
+        <div class="container">
+            <h2 style="text-align:center;color:hsl(var(--medical-blue));margin-bottom:25px;font-size:32px;">就医指南</h2>
+            <div class="guide-grid">
+                <div class="guide-card">
+                    <div class="guide-icon">📋</div>
+                    <h3>就诊流程</h3>
+                    <div class="guide-steps">
+                        <div class="step"><span class="step-num">1</span>挂号/预约</div>
+                        <div class="step-arrow">→</div>
+                        <div class="step"><span class="step-num">2</span>候诊报到</div>
+                        <div class="step-arrow">→</div>
+                        <div class="step"><span class="step-num">3</span>医生面诊</div>
+                        <div class="step-arrow">→</div>
+                        <div class="step"><span class="step-num">4</span>检查/取药</div>
+                    </div>
+                </div>
+                <div class="guide-card">
+                    <div class="guide-icon">📍</div>
+                    <h3>楼层导航</h3>
+                    <table class="floor-table">
+                        <tr><td>B1</td><td>地下停车场 · 职工食堂</td></tr>
+                        <tr><td>1F</td><td>大厅 · 挂号收费 · 药房 · 急诊</td></tr>
+                        <tr><td>2F</td><td>内科 · 检验科</td></tr>
+                        <tr><td>3F</td><td>外科 · 影像科</td></tr>
+                        <tr><td>4F</td><td>儿科 · 妇产科</td></tr>
+                        <tr><td>5F</td><td>眼科 · 口腔科 · 行政办公</td></tr>
+                    </table>
+                </div>
+                <div class="guide-card">
+                    <div class="guide-icon">🅿️</div>
+                    <h3>停车指引</h3>
+                    <div class="parking-info">
+                        <p><strong>地下停车场：</strong>B1层，入口位于医院南门</p>
+                        <p><strong>收费标准：</strong>前30分钟免费，5元/小时，封顶30元/天</p>
+                        <p><strong>就诊优惠：</strong>凭当日缴费单可减免2小时停车费</p>
+                        <p><strong>周边停车场：</strong>万达广场地下停车场（步行5分钟）</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 消息中心页 -->
+    <div id="messages" class="page">
+        <div class="container">
+            <h2 style="text-align:center;color:hsl(var(--medical-blue));margin-bottom:20px;font-size:32px;">消息中心</h2>
+            <div style="text-align:right;margin-bottom:15px;">
+                <span style="font-size:14px;color:hsl(210,10%,45%);margin-right:12px;">未读：<strong id="unreadBadge" style="color:hsl(var(--medical-blue));">0</strong></span>
+                <button class="btn btn-outline" onclick="markAllNotificationsRead()" style="font-size:13px;padding:6px 16px;">全部已读</button>
+            </div>
+            <div id="notificationList"></div>
+        </div>
+    </div>
+
+    <!-- 客服中心页 -->
+    <div id="serviceCenter" class="page">
+        <div class="container">
+            <h2 style="text-align:center;color:hsl(var(--medical-blue));margin-bottom:10px;font-size:32px;">客服中心</h2>
+            <p style="text-align:center;color:hsl(210,10%,45%);margin-bottom:25px;">常见问题 · 在线咨询 · 投诉建议</p>
+            <div class="faq-filter">
+                <button class="faq-cat active" onclick="filterFaqs('')">全部</button>
+                <button class="faq-cat" onclick="filterFaqs('APPOINTMENT')">预约挂号</button>
+                <button class="faq-cat" onclick="filterFaqs('PAYMENT')">缴费医保</button>
+                <button class="faq-cat" onclick="filterFaqs('GUIDE')">导诊指南</button>
+                <input type="text" id="faqSearch" placeholder="搜索问题..." onkeyup="searchFaqs()" style="padding:10px 16px;border-radius:24px;border:2px solid hsl(var(--medical-gray));width:200px;">
+            </div>
+            <div id="faqList"></div>
+            <hr style="margin:35px 0;border-color:hsl(var(--medical-gray))">
+            <h3 style="color:hsl(var(--medical-blue));text-align:center;margin-bottom:18px;">提交投诉/建议</h3>
+            <div class="complaint-form" style="max-width:600px;margin:0 auto;">
+                <select id="complaintType" style="width:100%;padding:12px;border-radius:12px;border:2px solid hsl(var(--medical-gray));margin-bottom:14px;">
+                    <option value="COMPLAINT">投诉</option>
+                    <option value="SUGGESTION">建议</option>
+                    <option value="PRAISE">表扬</option>
+                </select>
+                <input type="text" id="complaintTitle" placeholder="标题" style="width:100%;padding:12px;border-radius:12px;border:2px solid hsl(var(--medical-gray));margin-bottom:14px;">
+                <textarea id="complaintContent" rows="4" placeholder="详细内容..." style="width:100%;padding:12px;border-radius:12px;border:2px solid hsl(var(--medical-gray));margin-bottom:14px;"></textarea>
+                <input type="text" id="complaintContact" placeholder="联系方式（选填）" style="width:100%;padding:12px;border-radius:12px;border:2px solid hsl(var(--medical-gray));margin-bottom:14px;">
+                <button class="btn btn-primary" onclick="submitComplaint()" style="width:100%;background:var(--gradient-medical);color:white;border:none;">提交</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示消息 -->
+    <div id="message" class="message"></div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

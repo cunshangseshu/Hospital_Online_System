@@ -88,7 +88,7 @@ public class ConsultationServiceImpl extends ServiceImpl<ConsultationMapper, Con
         String senderType;
         if (userId.equals(consultation.getPatientId())) {
             senderType = "PATIENT";
-        } else if (userId.equals(consultation.getDoctorId())) {
+        } else if (isAssignedDoctor(userId, consultation.getDoctorId())) {
             senderType = "DOCTOR";
         } else {
             throw new RuntimeException("无权发送消息");
@@ -120,6 +120,7 @@ public class ConsultationServiceImpl extends ServiceImpl<ConsultationMapper, Con
         if (consultation == null) {
             throw new RuntimeException("问诊记录不存在");
         }
+        ensureParticipant(consultation);
 
         ConsultationVO vo = convertToVO(consultation);
 
@@ -144,11 +145,18 @@ public class ConsultationServiceImpl extends ServiceImpl<ConsultationMapper, Con
         if ("PATIENT".equals(userType)) {
             wrapper.eq(Consultation::getPatientId, userId);
         } else if ("DOCTOR".equals(userType)) {
-            wrapper.eq(Consultation::getDoctorId, userId);
+            Doctor doctor = getDoctorByUserId(userId);
+            if (doctor == null) {
+                throw new RuntimeException("医生信息不存在");
+            }
+            wrapper.eq(Consultation::getDoctorId, doctor.getId());
         }
 
         if (StringUtils.hasText(status)) {
-            wrapper.eq(Consultation::getStatus, Integer.parseInt(status));
+            Integer statusCode = parseStatus(status);
+            if (statusCode != null) {
+                wrapper.eq(Consultation::getStatus, statusCode);
+            }
         }
 
         wrapper.orderByDesc(Consultation::getCreatedAt);
@@ -170,6 +178,10 @@ public class ConsultationServiceImpl extends ServiceImpl<ConsultationMapper, Con
         if (consultation == null) {
             throw new RuntimeException("问诊记录不存在");
         }
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (!isAssignedDoctor(userId, consultation.getDoctorId())) {
+            throw new RuntimeException("无权接诊该问诊");
+        }
         if (consultation.getStatus() != 0) {
             throw new RuntimeException("当前状态无法接诊");
         }
@@ -188,6 +200,10 @@ public class ConsultationServiceImpl extends ServiceImpl<ConsultationMapper, Con
         if (consultation == null) {
             throw new RuntimeException("问诊记录不存在");
         }
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (userId == null || (!userId.equals(consultation.getPatientId()) && !isAssignedDoctor(userId, consultation.getDoctorId()))) {
+            throw new RuntimeException("无权结束该问诊");
+        }
 
         consultation.setStatus(2); // 已完成
         consultation.setFinishedAt(LocalDateTime.now());
@@ -198,6 +214,12 @@ public class ConsultationServiceImpl extends ServiceImpl<ConsultationMapper, Con
 
     @Override
     public List<ConsultationMessageVO> getNewMessages(Long consultationId, Long afterMessageId) {
+        Consultation consultation = getById(consultationId);
+        if (consultation == null) {
+            throw new RuntimeException("问诊记录不存在");
+        }
+        ensureParticipant(consultation);
+
         LambdaQueryWrapper<ConsultationMessage> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ConsultationMessage::getConsultationId, consultationId);
         if (afterMessageId != null && afterMessageId > 0) {
@@ -298,6 +320,47 @@ public class ConsultationServiceImpl extends ServiceImpl<ConsultationMapper, Con
         msg.setContent(content);
         msg.setIsRead(1);
         messageMapper.insert(msg);
+    }
+
+    private Doctor getDoctorByUserId(Long userId) {
+        if (userId == null) {
+            return null;
+        }
+        return doctorService.getOne(new LambdaQueryWrapper<Doctor>().eq(Doctor::getUserId, userId));
+    }
+
+    private boolean isAssignedDoctor(Long userId, Long doctorId) {
+        Doctor doctor = getDoctorByUserId(userId);
+        return doctor != null && doctor.getId().equals(doctorId);
+    }
+
+    private void ensureParticipant(Consultation consultation) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (userId == null || (!userId.equals(consultation.getPatientId()) && !isAssignedDoctor(userId, consultation.getDoctorId()))) {
+            throw new RuntimeException("无权访问该问诊");
+        }
+    }
+
+    private Integer parseStatus(String status) {
+        if (!StringUtils.hasText(status)) {
+            return null;
+        }
+        switch (status) {
+            case "0":
+            case "PENDING":
+                return 0;
+            case "1":
+            case "IN_PROGRESS":
+                return 1;
+            case "2":
+            case "COMPLETED":
+                return 2;
+            case "3":
+            case "CLOSED":
+                return 3;
+            default:
+                return null;
+        }
     }
 
     private String generateNo(String prefix) {
