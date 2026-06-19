@@ -3,425 +3,851 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>芯芯数字化在线医疗服务系统 - 温馨医疗服务</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>芯芯数字化在线医疗服务系统</title>
+    <!-- Vue 3 and Axios via CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- Tailwind CSS for modern responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        medical: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [v-cloak] { display: none !important; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </head>
-<body>
-    <!-- 导航栏 -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="logo">
-                <img src="/images/医院logo.jpg" alt="芯芯数字化在线医疗" class="logo-img">
-                <span class="logo-text">芯芯数字化在线医疗服务系统</span>
-            </div>
-            <ul class="nav-menu" id="navMenu">
-                <li><a href="#" onclick="showPage('home')" class="active">首页</a></li>
-                <li><a href="#" onclick="showPage('departments')">科室介绍</a></li>
-                <li><a href="#" onclick="showPage('doctors')">医生团队</a></li>
-                <li><a href="#" onclick="showPage('appointment')">预约挂号</a></li>
-                <li><a href="#" onclick="showPage('consultation')">在线问诊</a></li>
-                <li class="nav-dropdown">
-                    <a href="#" onclick="event.preventDefault();this.parentElement.classList.toggle('open')">更多服务 ▼</a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#" onclick="showPage('myAppointments')">我的预约</a></li>
-                        <li><a href="#" onclick="showPage('reports')">报告查询</a></li>
-                        <li><a href="#" onclick="showPage('healthProfile')">健康档案</a></li>
-                        <li><a href="#" onclick="showPage('hospitalGuide')">就医指南</a></li>
-                        <li><a href="#" onclick="showPage('messages')">消息中心<div class="nav-badge" id="navUnreadBadge" style="display:none;"></div></a></li>
-                        <li><a href="#" onclick="showPage('serviceCenter')">客服中心</a></li>
-                    </ul>
-                </li>
-                <li id="loginNav"><a href="#" onclick="showPage('login')">登录/注册</a></li>
-                <li id="userNav" style="display:none;">
-                    <span id="userName"></span>
-                    <a href="#" onclick="logout()">退出</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-
-    <!-- 首页 -->
-    <div id="home" class="page active">
-        <div class="hero breathe">
-            <div class="container">
-                <!--<div class="medical-icon">🏥</div>-->
-                <h2>芯芯数字化在线医疗服务系统</h2>
-                <p>专业医生团队 · 便捷预约挂号 · 全程贴心关怀</p>
-                <button class="btn btn-primary pulse" onclick="showPage('appointment')">立即预约</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 科室介绍页 -->
-    <div id="departments" class="page">
-        <div class="container">
-            <h2 style="text-align: center; color: hsl(var(--medical-blue)); margin-bottom: 30px; font-size: 32px;">科室介绍</h2>
-            <div class="search-box">
-                <input type="text" id="deptSearch" placeholder="搜索科室名称..." onkeyup="searchDepartments()">
-            </div>
-            <div id="departmentList" class="grid-list">
-                <!-- AJAX动态加载科室列表 -->
-            </div>
-        </div>
-    </div>
-
-    <!-- 医生团队页 -->
-    <div id="doctors" class="page">
-        <div class="container">
-            <h2 style="text-align: center; color: hsl(var(--medical-blue)); margin-bottom: 30px; font-size: 32px;">医生团队</h2>
-            <div class="filter-box">
-                <select id="deptFilter" onchange="loadDoctorsByDept()">
-                    <option value="">全部科室</option>
-                </select>
-                <input type="text" id="doctorSearch" placeholder="搜索医生姓名或擅长领域..." onkeyup="searchDoctors()">
-            </div>
-            <div id="doctorList" class="grid-list">
-                <!-- AJAX动态加载医生列表 -->
-            </div>
-        </div>
-    </div>
-
-    <!-- 预约挂号页 -->
-    <div id="appointment" class="page">
-        <div class="container">
-            <h2 style="text-align: center; color: hsl(var(--medical-blue)); margin-bottom: 30px; font-size: 32px;">预约挂号</h2>
-            <div class="appointment-form">
-                <div class="form-group">
-                    <label>选择科室：</label>
-                    <select id="appointDept" onchange="loadDoctorsForAppointment()">
-                        <option value="">请选择科室</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>选择医生：</label>
-                    <select id="appointDoctor" onchange="loadSchedules()" disabled>
-                        <option value="">请先选择科室</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>选择日期：</label>
-                    <input type="date" id="appointDate" onchange="loadSchedules()">
-                </div>
-                <div class="form-group">
-                    <label>时间段：</label>
-                    <select id="appointTimeSlot" disabled>
-                        <option value="">请先选择医生和日期</option>
-                    </select>
-                    <span id="slotInfo" class="slot-info"></span>
-                </div>
-                <div class="form-group">
-                    <label>症状描述：</label>
-                    <textarea id="symptom" rows="4" placeholder="请简要描述您的症状，方便医生提前了解..."></textarea>
-                </div>
-                <button class="btn btn-primary" onclick="submitAppointment()">提交预约</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 在线问诊页 -->
-    <div id="consultation" class="page">
-        <div class="container">
-            <!-- 问诊模式选择 / 问诊列表 -->
-            <div id="consultationList" style="display:block;">
-                <h2 style="text-align: center; color: hsl(var(--medical-blue)); margin-bottom: 10px; font-size: 32px;">在线问诊</h2>
-                <p style="text-align: center; color: hsl(210,10%,45%); margin-bottom: 25px;">足不出户，与专业医生在线交流</p>
-
-                <div style="display:flex; gap:15px; justify-content:center; margin-bottom:30px; flex-wrap:wrap;">
-                    <button class="btn btn-primary" onclick="startTextConsultation()" style="background: var(--gradient-medical); color: white; border: none;">💬 文字问诊</button>
-                    <button class="btn btn-outline" onclick="window.open('/video-consultation.html','_blank')">📹 视频问诊</button>
-                </div>
-
-                <div style="display:flex; gap:10px; justify-content:center; margin-bottom:25px; flex-wrap:wrap;">
-                    <select id="consultStatusFilter" onchange="loadMyConsultations()" style="padding:10px 16px; border-radius:24px; border:2px solid hsl(var(--medical-gray));">
-                        <option value="">全部状态</option>
-                        <option value="0">待接诊</option>
-                        <option value="1">问诊中</option>
-                        <option value="2">已完成</option>
-                        <option value="3">已关闭</option>
-                    </select>
-                </div>
-
-                <div id="consultationListContainer">
-                    <!-- AJAX动态加载问诊列表 -->
-                </div>
-                <div class="pagination" id="consultPagination"></div>
-            </div>
-
-            <!-- 问诊聊天界面 -->
-            <div id="consultationChat" style="display:none;">
-                <div class="chat-header">
-                    <button class="btn-back-chat" onclick="backToList()">← 返回</button>
-                    <div class="chat-doctor-info">
-                        <div class="chat-avatar"></div>
-                        <div>
-                            <div class="chat-doctor-name" id="chatDoctorName"></div>
-                            <div class="chat-doctor-dept" id="chatDoctorDept"></div>
+<body class="bg-slate-50 font-sans antialiased text-slate-800">
+    <div id="app" v-cloak class="min-h-screen flex flex-col">
+        <!-- Toast Message Notification -->
+        <transition enter-active-class="transform ease-out duration-300 transition"
+                    enter-from-class="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
+                    enter-to-class="translate-y-0 opacity-100 sm:translate-x-0"
+                    leave-active-class="transition ease-in duration-100"
+                    leave-from-class="opacity-100"
+                    leave-to-class="opacity-0">
+            <div v-if="toast.show" class="fixed bottom-5 right-5 z-55 max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 overflow-hidden border-l-4" :class="toast.type === 'success' ? 'border-teal-500' : 'border-rose-500'">
+                <div class="flex-1 p-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <span v-if="toast.type === 'success'" class="text-teal-500">✓</span>
+                            <span v-else class="text-rose-500">✗</span>
+                        </div>
+                        <div class="ml-3 flex-1 pt-0.5">
+                            <p class="text-sm font-medium text-slate-900">{{ toast.message }}</p>
                         </div>
                     </div>
-                    <div class="chat-status" id="chatStatus"></div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- Navbar Section -->
+        <nav class="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-slate-100 z-50 h-16 transition-all duration-300">
+            <div class="container mx-auto px-6 h-full flex items-center justify-between">
+                <!-- Logo Area -->
+                <div class="flex items-center gap-2 cursor-pointer" @click="showPage('home')">
+                    <div class="w-8 h-8 rounded bg-teal-600 text-white flex items-center justify-center font-bold font-mono">+</div>
+                    <span class="text-xl font-bold tracking-tight text-slate-800">芯芯数字化在线医疗</span>
                 </div>
 
-                <div class="chat-messages" id="chatMessages">
-                    <!-- AJAX动态加载消息 -->
+                <!-- Navigation menu -->
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#" :class="currentPage === 'home' ? 'text-teal-600 font-semibold' : 'text-slate-600 hover:text-teal-600 transition-colors'" @click.prevent="showPage('home')">首页</a>
+                    <a href="#" :class="currentPage === 'departments' ? 'text-teal-600 font-semibold' : 'text-slate-600 hover:text-teal-600 transition-colors'" @click.prevent="showPage('departments')">科室介绍</a>
+                    <a href="#" :class="currentPage === 'doctors' ? 'text-teal-600 font-semibold' : 'text-slate-600 hover:text-teal-600 transition-colors'" @click.prevent="showPage('doctors')">医生团队</a>
+                    <a href="#" :class="currentPage === 'appointment' ? 'text-teal-600 font-semibold' : 'text-slate-600 hover:text-teal-600 transition-colors'" @click.prevent="showPage('appointment')">预约挂号</a>
+                    <a href="#" :class="currentPage === 'consultation' ? 'text-teal-600 font-semibold' : 'text-slate-600 hover:text-teal-600 transition-colors'" @click.prevent="showPage('consultation')">在线问诊</a>
+
+                    <!-- Hierarchical Dropdown menu for logged in users -->
+                    <div class="relative group" v-if="isLoggedIn">
+                        <span class="text-slate-600 hover:text-teal-600 transition-colors cursor-pointer flex items-center gap-1">
+                            更多服务 <span class="text-[10px]">▼</span>
+                        </span>
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <div class="bg-white shadow-xl rounded-xl border border-slate-100 w-44 py-2 flex flex-col">
+                                <a href="#" class="px-4 py-2 hover:bg-slate-50 text-slate-700 text-sm hover:text-teal-600" @click.prevent="showPage('myAppointments')">我的预约</a>
+                                <a href="#" class="px-4 py-2 hover:bg-slate-50 text-slate-700 text-sm hover:text-teal-600" @click.prevent="showPage('reports')">报告查询</a>
+                                <a href="#" class="px-4 py-2 hover:bg-slate-50 text-slate-700 text-sm hover:text-teal-600" @click.prevent="showPage('healthProfile')">健康档案</a>
+                                <a href="#" class="px-4 py-2 hover:bg-slate-50 text-slate-700 text-sm hover:text-teal-600" @click.prevent="showPage('hospitalGuide')">就医指南</a>
+                                <a href="#" class="px-4 py-2 hover:bg-slate-50 text-slate-700 text-sm hover:text-teal-600 flex items-center justify-between" @click.prevent="showPage('messages')">
+                                    <span>消息中心</span>
+                                    <span v-if="unreadCount > 0" class="bg-rose-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{{ unreadCount }}</span>
+                                </a>
+                                <a href="#" class="px-4 py-2 hover:bg-slate-50 text-slate-700 text-sm hover:text-teal-600" @click.prevent="showPage('serviceCenter')">客服中心</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="chat-footer" id="chatFooter">
-                    <textarea id="chatInput" placeholder="输入您的消息..." rows="2"></textarea>
-                    <button class="btn-send" onclick="sendConsultMessage()">发送</button>
+                <!-- Account Management -->
+                <div class="flex items-center gap-4">
+                    <template v-if="!isLoggedIn">
+                        <button class="text-slate-600 font-medium hover:text-teal-600 transition-colors text-sm" @click="showPage('login')">登录/注册</button>
+                    </template>
+                    <template v-else>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-semibold text-slate-700">{{ currentUser.realName || currentUser.username }}</span>
+                            <button class="bg-rose-50 hover:bg-rose-100 text-rose-600 font-medium px-4 py-2 rounded-full transition-all text-xs" @click="logout">退出</button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Panel Section -->
+        <main class="flex-grow pt-16">
+            <!-- 1. Home Page View -->
+            <div v-show="currentPage === 'home'" class="flex flex-col min-h-[calc(100vh-4rem)]">
+                <div class="relative bg-gradient-to-br from-teal-900 to-slate-900 text-white flex-grow flex items-center py-20">
+                    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                    <div class="container mx-auto px-6 max-w-4xl text-center z-10">
+                        <span class="inline-block mb-4 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-teal-200 text-xs tracking-wider font-semibold">智能 · 互联 · 温暖 · 专业</span>
+                        <h1 class="text-4xl md:text-6xl font-bold tracking-tight text-white mb-6 leading-tight">芯芯数字化在线服务系统</h1>
+                        <p class="text-lg md:text-xl text-teal-50/80 font-light mb-10 max-w-2xl mx-auto">汇聚权威医疗团队，提供在线复诊、健康管理、报告调阅等一站式管家级数字化医疗服务。</p>
+                        <div class="flex flex-wrap gap-4 justify-center">
+                            <button class="bg-white hover:bg-teal-50 text-teal-900 font-bold px-8 py-3.5 rounded-full shadow-lg hover:shadow-teal-500/20 active:translate-y-0.5 transition-all text-lg" @click="showPage('appointment')">立即预约挂号</button>
+                            <button class="bg-white/10 hover:bg-white/20 text-white font-semibold px-8 py-3.5 rounded-full border border-white/30 backdrop-blur-sm transition-all text-lg" @click="showPage('consultation')">在线问诊咨询</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- 发起问诊弹窗 -->
-            <div id="startConsultModal" class="modal">
-                <div class="modal-content">
-                    <span class="close" onclick="closeStartConsultModal()">&times;</span>
-                    <h3 style="color:hsl(var(--medical-blue)); margin-bottom:20px;">发起文字问诊</h3>
-                    <div class="form-group">
-                        <label>选择科室：</label>
-                        <select id="consultDept" onchange="loadConsultDoctors()">
-                            <option value="">请选择科室</option>
+            <!-- 2. Departments view -->
+            <div v-show="currentPage === 'departments'" class="container mx-auto px-6 py-10 max-w-6xl">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">科室介绍</h2>
+                    <p class="mt-2 text-slate-500">专业细分诊疗，针对性解答您的各类健康困惑</p>
+                </div>
+                <div class="max-w-md mx-auto mb-8">
+                    <input type="text" v-model="filters.deptQuery" @input="searchDepartments" placeholder="搜索科室名称..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-sm">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div v-for="dept in departments" :key="dept.id" class="bg-white p-6 rounded-2xl border border-slate-100 hover:border-teal-100 shadow-sm hover:shadow-md transition-all group flex flex-col justify-between">
+                        <div>
+                            <span class="inline-block px-3 py-1 rounded-md bg-teal-50 text-teal-600 text-xs font-semibold mb-3 tracking-wider">{{ dept.deptCode }}</span>
+                            <h3 class="text-xl font-bold text-slate-800 mb-2">{{ dept.deptName }}</h3>
+                            <p class="text-slate-500 text-sm leading-relaxed mb-6 font-light">{{ dept.description || '暂无描述' }}</p>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 text-xs text-slate-400 space-y-1 font-mono">
+                            <div>📍 位置：{{ dept.location }}</div>
+                            <div>📞 电话：{{ dept.phone }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Doctors View -->
+            <div v-show="currentPage === 'doctors'" class="container mx-auto px-6 py-10 max-w-6xl">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">医生团队</h2>
+                    <p class="mt-2 text-slate-500">汇聚名医资源，经验丰富，时刻为您提供全面专业的健康诊疗</p>
+                </div>
+                <div class="flex flex-col md:flex-row gap-4 max-w-xl mx-auto mb-10 w-full">
+                    <select v-model="filters.docDeptId" @change="loadDoctorsByDept" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white shadow-sm flex-shrink-0 md:w-44">
+                        <option value="">全部科室</option>
+                        <option v-for="dept in deptList" :value="dept.id" :key="dept.id">{{ dept.deptName }}</option>
+                    </select>
+                    <input type="text" v-model="filters.docQuery" @input="searchDoctors" placeholder="搜索医生姓名或擅长领域..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 shadow-sm">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div v-for="doc in doctors" :key="doc.id" class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-6 relative group overflow-hidden">
+                        <div class="w-16 h-16 rounded-full bg-teal-50 text-teal-700 font-bold flex items-center justify-center text-xl flex-shrink-0">
+                            {{ doc.realName ? doc.realName.slice(-2) : '医生' }}
+                        </div>
+                        <div class="flex-grow flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                                    <h3 class="text-lg font-bold text-slate-800">{{ doc.realName }}</h3>
+                                    <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-semibold">{{ doc.title }}</span>
+                                    <span class="px-2 py-0.5 rounded bg-teal-50 text-teal-600 text-[10px] font-semibold">★ {{ doc.rating }}</span>
+                                </div>
+                                <div class="text-xs text-teal-600 font-medium mb-3">所属科室：{{ doc.departmentName }} | 履历：{{ doc.experience || 0 }}年经验</div>
+                                <p class="text-slate-500 text-xs font-light leading-relaxed mb-4"><strong>擅长：</strong>{{ doc.specialty || '无' }}</p>
+                                <p class="text-slate-400 text-xs font-light leading-relaxed mb-4">{{ doc.introduction || '这名医生很神秘，什么都没有留下。' }}</p>
+                            </div>
+                            <div class="border-t border-slate-100 pt-4 flex items-center justify-between">
+                                <span class="text-slate-500 text-xs">挂号诊疗费：<strong class="text-rose-500 text-base font-bold">¥{{ doc.consultationFee }}</strong></span>
+                                <button class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-sm hover:shadow active:scale-95 transition-all" @click="quickBook(doc)">预约挂号</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Appointment Booking Form -->
+            <div v-show="currentPage === 'appointment'" class="container mx-auto px-6 py-10 max-w-2xl">
+                <div class="bg-white rounded-3xl border border-slate-100 shadow-xl p-8">
+                    <h2 class="text-2xl font-black text-slate-800 mb-6 text-center">预约挂号服务</h2>
+                    <div class="space-y-5">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-semibold text-slate-600">选择挂号科室：</label>
+                            <select v-model="booking.deptId" @change="onBookingDeptChange" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white">
+                                <option value="">请先选择科室</option>
+                                <option v-for="dept in deptList" :value="dept.id" :key="dept.id">{{ dept.deptName }}</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-semibold text-slate-600">选择挂号医生：</label>
+                            <select v-model="booking.doctorId" :disabled="!booking.deptId" @change="onBookingDoctorOrDateChange" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white disabled:bg-slate-50 disabled:text-slate-400">
+                                <option value="">请选择医生</option>
+                                <option v-for="doc in bookingDoctors" :value="doc.id" :key="doc.id">{{ doc.realName }} ({{ doc.title }})</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-semibold text-slate-600">选择出诊日期：</label>
+                            <input type="date" v-model="booking.date" :disabled="!booking.doctorId" :min="todayDate" @change="onBookingDoctorOrDateChange" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white disabled:bg-slate-50 disabled:text-slate-400">
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-semibold text-slate-600">选择出诊时间段：</label>
+                            <select v-model="booking.scheduleId" :disabled="bookingTimeSlots.length === 0" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white disabled:bg-slate-50 disabled:text-slate-400">
+                                <option value="">{{ bookingTimeSlots.length === 0 ? '该日期暂无可用排班' : '请选择具体时间段' }}</option>
+                                <option v-for="slot in bookingTimeSlots" :value="slot.id" :key="slot.id">
+                                    {{ slot.timeSlot === 'MORNING' ? '上午' : slot.timeSlot === 'AFTERNOON' ? '下午' : '晚上' }} (剩余{{ slot.availableSlots }}号)
+                                </option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-semibold text-slate-600">简明主诉描述：</label>
+                            <textarea v-model="booking.symptom" rows="4" placeholder="请在此输入您的症状以便出诊医生提前了解..." class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 resize-none"></textarea>
+                        </div>
+                        <button class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-teal-500/20 active:translate-y-0.5 transition-all text-base mt-2" @click="submitAppointment">提交系统预约挂号</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Online Consultation -->
+            <div v-show="currentPage === 'consultation'" class="container mx-auto px-6 py-10 max-w-6xl">
+                <!-- Chat List View -->
+                <div v-show="!consultation.activeChatId" class="space-y-6">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">在线医疗问诊</h2>
+                        <p class="mt-2 text-slate-500">不出远门，随时向权威名医在线文字/视频复诊</p>
+                    </div>
+                    <div class="flex justify-center gap-4 flex-wrap mb-8">
+                        <button class="bg-teal-600 hover:bg-teal-700 text-white font-bold px-6 py-3 rounded-xl shadow transition-all" @click="openConsultModal">💬 发起图文问诊</button>
+                        <button class="bg-white hover:bg-slate-50 text-slate-700 font-semibold px-6 py-3 rounded-xl border border-slate-200 transition-all" @click="openVideoConsult">📹 发起视频问诊</button>
+                    </div>
+
+                    <!-- Category Status filter for List -->
+                    <div class="flex justify-center mb-6">
+                        <select v-model="consultation.filterStatus" @change="loadMyConsultations" class="px-4 py-2.5 rounded-full border border-slate-200 bg-white focus:outline-none text-sm text-slate-600">
+                            <option value="">全部状态</option>
+                            <option value="0">待接诊</option>
+                            <option value="1">问诊中</option>
+                            <option value="2">已完成</option>
+                            <option value="3">已关闭</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>选择医生：</label>
-                        <select id="consultDoctor" disabled>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div v-for="c in consultation.list" :key="c.id" class="bg-white p-6 rounded-2xl border border-slate-100 hover:border-teal-100 shadow-sm hover:shadow transition-all cursor-pointer flex flex-col justify-between" @click="enterChat(c)">
+                            <div>
+                                <div class="flex justify-between items-center mb-4">
+                                    <span class="text-xs font-mono text-slate-400">单号：{{ c.consultationNo }}</span>
+                                    <span class="px-2.5 py-0.5 rounded text-[10px] font-semibold"
+                                          :class="c.status === 0 ? 'bg-amber-50 text-amber-600' : c.status === 1 ? 'bg-sky-50 text-sky-600' : 'bg-slate-100 text-slate-500'">
+                                        {{ c.statusText }}
+                                    </span>
+                                </div>
+                                <h3 class="text-lg font-bold text-slate-800 mb-1">科室：{{ c.deptName }}</h3>
+                                <p class="text-slate-600 text-xs font-medium mb-3">主诊医生：{{ c.doctorName }} ({{ c.doctorTitle || '名医' }})</p>
+                                <p class="text-slate-400 text-xs font-light line-clamp-2 leading-relaxed mb-4">主诉症状：{{ c.symptomDescription }}</p>
+                            </div>
+                            <div class="border-t border-slate-100 pt-4 flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                                <span>发起时间：{{ c.createdAt ? c.createdAt.substring(0, 16).replace('T', ' ') : '' }}</span>
+                                <span class="text-teal-600 font-semibold group-hover:underline">点击进入诊室 →</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="consultation.list.length === 0" class="text-center py-20 text-slate-400 font-light">暂无相关在线问诊预约记录</div>
+                </div>
+
+                <!-- Chat Room Window View (Patient Perspective) -->
+                <div v-show="consultation.activeChatId" class="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden flex flex-col h-[650px]">
+                    <div class="bg-slate-50 border-b border-slate-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
+                        <div class="flex items-center gap-3">
+                            <button class="text-slate-500 hover:text-teal-600 text-sm font-semibold flex items-center gap-1" @click="exitChat">← 返回</button>
+                            <div class="h-1px w-4 bg-slate-200 self-center"></div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-base leading-tight">{{ consultation.chatDoctorName }}</h3>
+                                <span class="text-[10px] text-slate-400">{{ consultation.chatDoctorDept }}</span>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-600">{{ consultation.chatStatusLabel }}</span>
+                    </div>
+
+                    <!-- Live Message List Container -->
+                    <div id="chatMessages" class="flex-grow overflow-y-auto p-6 bg-slate-50 space-y-4">
+                        <div v-for="msg in consultation.messages" :key="msg.id" class="flex flex-col" :class="msg.senderType === 'SYSTEM' ? 'items-center' : msg.senderType === 'PATIENT' ? 'items-end' : 'items-start'">
+                            <span v-if="msg.senderType === 'SYSTEM'" class="my-2 bg-slate-200/60 backdrop-blur text-slate-500 text-[10px] px-3 py-1 rounded-full">🔔 {{ msg.content }}</span>
+                            <div v-else class="max-w-[70%] flex flex-col" :class="msg.senderType === 'PATIENT' ? 'items-end' : 'items-start'">
+                                <div class="px-4 py-3 rounded-2xl shadow-sm text-sm"
+                                     :class="msg.senderType === 'PATIENT' ? 'bg-teal-600 text-white rounded-tr-none' : 'bg-white text-slate-800 rounded-tl-none border border-slate-100'">
+
+                                    <!-- Inline Prescription Card Render -->
+                                    <template v-if="msg.messageType === 'PRESCRIPTION'">
+                                        <div class="cursor-pointer hover:underline flex items-center gap-2 border-b border-white/20 pb-1.5 mb-1.5 font-bold" @click="fetchPrescriptionDetail(msg.refPrescriptionId)">
+                                            <span>💊</span> <span>查看电子处方卡片</span>
+                                        </div>
+                                        <p class="text-xs opacity-90">{{ msg.content }}</p>
+                                    </template>
+                                    <p v-else class="leading-relaxed">{{ msg.content }}</p>
+                                </div>
+                                <span class="text-[9px] text-slate-400 mt-1 font-mono">{{ msg.senderName }} · {{ msg.time }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Box Footer Send Input (Hidden if complete/closed) -->
+                    <div v-show="consultation.chatStatus < 2" class="p-4 bg-white border-t border-slate-100 flex gap-2 flex-shrink-0">
+                        <input type="text" v-model="consultation.inputText" @keyup.enter="sendConsultMessage" placeholder="输入回复医师的病情反馈..." class="flex-grow px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500">
+                        <button class="bg-teal-600 hover:bg-teal-700 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-sm flex-shrink-0" @click="sendConsultMessage">发送</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. My Appointments -->
+            <div v-show="currentPage === 'myAppointments'" class="container mx-auto px-6 py-10 max-w-6xl">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">我的挂号预约</h2>
+                    <p class="mt-2 text-slate-500">集中管理患者已登记的线上出诊及改签取消履历</p>
+                </div>
+                <div class="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto mb-8 w-full">
+                    <select v-model="myAppts.filterStatus" @change="loadMyAppointments" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white shadow-sm flex-shrink-0 md:w-44">
+                        <option value="">全部状态</option>
+                        <option value="PENDING">待确认</option>
+                        <option value="CONFIRMED">已确认</option>
+                        <option value="COMPLETED">已完成</option>
+                        <option value="CANCELLED">已取消</option>
+                    </select>
+                    <input type="text" v-model="myAppts.query" @input="searchMyAppointments" placeholder="搜索预约单号或主诊医生..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 shadow-sm">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div v-for="a in myAppts.list" :key="a.id" class="bg-white p-6 rounded-2xl border border-slate-100 hover:border-teal-100 shadow-sm hover:shadow transition-all cursor-pointer flex flex-col justify-between" @click="showAppointmentDetail(a.id)">
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-sm font-bold text-slate-800 font-mono">{{ a.appointmentNo }}</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold"
+                                      :class="a.statusText === 'PENDING' ? 'bg-amber-50 text-amber-600' : a.statusText === 'CONFIRMED' ? 'bg-teal-50 text-teal-600' : a.statusText === 'CANCELLED' ? 'bg-slate-100 text-slate-400' : 'bg-slate-50 text-slate-500'">
+                                    {{ a.statusLabel || a.statusText }}
+                                </span>
+                            </div>
+                            <div class="space-y-1.5 text-xs text-slate-500 mb-4 font-light">
+                                <div><strong class="font-semibold text-slate-700">主诊医生：</strong>{{ a.doctorTitle }} {{ a.doctorName }} ({{ a.departmentName }})</div>
+                                <div><strong class="font-semibold text-slate-700">就诊档期：</strong>{{ a.appointmentDate }} {{ a.timeSlotText }}</div>
+                                <div><strong class="font-semibold text-slate-700">主诉病情：</strong>{{ a.symptom || '无' }}</div>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                            <span>登记日期：{{ a.createTime }}</span>
+                            <span class="text-teal-600 font-semibold">查看详情/改签 →</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom pagination buttons -->
+                <div v-if="myAppts.total > myAppts.pageSize" class="flex justify-center items-center gap-2 mt-10">
+                    <button :disabled="myAppts.page === 1" class="px-4 py-2 border rounded-lg bg-white disabled:opacity-50 text-xs" @click="changeApptsPage(myAppts.page - 1)">上一页</button>
+                    <span class="text-xs text-slate-500">页码 {{ myAppts.page }}</span>
+                    <button :disabled="myAppts.page * myAppts.pageSize >= myAppts.total" class="px-4 py-2 border rounded-lg bg-white disabled:opacity-50 text-xs" @click="changeApptsPage(myAppts.page + 1)">下一页</button>
+                </div>
+            </div>
+
+            <!-- 7. Login and Register View -->
+            <div v-show="currentPage === 'login'" class="container mx-auto px-6 py-16 flex items-center justify-center min-h-[calc(100vh-4rem)]">
+                <div class="bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden max-w-md w-full p-8">
+                    <!-- Custom Tabs -->
+                    <div class="flex border-b border-slate-100 mb-6">
+                        <button class="flex-1 pb-3 text-center transition-all border-b-2 font-bold" :class="authTab === 'login' ? 'border-teal-500 text-teal-600' : 'border-transparent text-slate-500 hover:text-slate-800'" @click="authTab = 'login'">用户登录</button>
+                        <button class="flex-1 pb-3 text-center transition-all border-b-2 font-bold" :class="authTab === 'register' ? 'border-teal-500 text-teal-600' : 'border-transparent text-slate-500 hover:text-slate-800'" @click="authTab = 'register'">快速注册</button>
+                    </div>
+
+                    <!-- Login Module -->
+                    <div v-if="authTab === 'login'" class="space-y-4">
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-semibold text-slate-500">用户名</label>
+                            <input type="text" v-model="loginForm.username" placeholder="请输入您的账号" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-semibold text-slate-500">安全密码</label>
+                            <input type="password" v-model="loginForm.password" placeholder="请输入登录密码" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500">
+                        </div>
+                        <button class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-teal-500/20 active:translate-y-0.5 transition-all text-base mt-2" @click="handleLoginSubmit">立即登录系统</button>
+                    </div>
+
+                    <!-- Register Module -->
+                    <div v-if="authTab === 'register'" class="space-y-4 max-h-[420px] overflow-y-auto pr-1 scrollbar-hide">
+                        <div class="flex flex-col gap-1.5">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-semibold text-slate-500">设置登录账号</label>
+                                <span v-if="registerTip" class="text-[10px]" :class="registerTipValid ? 'text-teal-600' : 'text-rose-500'">{{ registerTip }}</span>
+                            </div>
+                            <input type="text" v-model="registerForm.username" @blur="checkUsernameAvailable" placeholder="3-20位英文字母或数字" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-semibold text-slate-500">设置登录密码</label>
+                            <input type="password" v-model="registerForm.password" placeholder="设置最少6位的高强度密码" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-semibold text-slate-500">再次确认密码</label>
+                            <input type="password" v-model="registerForm.passwordConfirm" placeholder="请再次输入填写的密码" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-semibold text-slate-500">患者真实姓名</label>
+                            <input type="text" v-model="registerForm.realName" placeholder="我们将采用实名制看病就医" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-semibold text-slate-500">患者有效手机号</label>
+                            <input type="tel" v-model="registerForm.phone" placeholder="用于接收预约回执短信" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-semibold text-slate-500">微信/密送电子邮箱 (选填)</label>
+                            <input type="email" v-model="registerForm.email" placeholder="用于同步接收报告通知" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500">
+                        </div>
+                        <button class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-teal-500/20 active:translate-y-0.5 transition-all text-base mt-2" @click="handleRegisterSubmit">确认并注册账号</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. Reports View -->
+            <div v-show="currentPage === 'reports'" class="container mx-auto px-6 py-10 max-w-5xl">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">数字化报告查询</h2>
+                    <p class="mt-2 text-slate-500">个人检验化验指标、医学放射影像结果一站式查阅</p>
+                </div>
+                <!-- Custom tabs for reports -->
+                <div class="flex max-w-sm mx-auto border border-slate-200 rounded-xl overflow-hidden mb-8 shadow-sm">
+                    <button class="flex-1 py-3 text-center transition-all font-semibold" :class="reportsTab === 'lab' ? 'bg-teal-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'" @click="switchReportsTab('lab')">化验/检验报告</button>
+                    <button class="flex-1 py-3 text-center transition-all font-semibold" :class="reportsTab === 'imaging' ? 'bg-teal-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'" @click="switchReportsTab('imaging')">放射/影像报告</button>
+                </div>
+
+                <!-- Lab reports list -->
+                <div v-show="reportsTab === 'lab'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div v-for="r in reports.labs" :key="r.id" class="bg-white p-6 rounded-2xl border border-slate-100 hover:border-teal-100 shadow-sm hover:shadow transition-all cursor-pointer flex flex-col justify-between" :class="r.normalFlag === 0 ? 'border-l-4 border-l-rose-500' : ''" @click="fetchLabReportDetail(r.id)">
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-sm font-bold text-slate-800">{{ r.reportName }}</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold" :class="r.normalFlag === 1 ? 'bg-teal-50 text-teal-600' : 'bg-rose-50 text-rose-600'">{{ r.normalFlagText }}</span>
+                            </div>
+                            <div class="space-y-1 text-xs text-slate-400 font-light font-mono">
+                                <div>编号：{{ r.reportNo }}</div>
+                                <div>开单医生：{{ r.doctorName || '-' }}</div>
+                                <div>化验样本：{{ r.sampleType || '-' }}</div>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 flex items-center justify-between text-[10px] text-slate-400 font-mono mt-4">
+                            <span>化验日期：{{ r.reportDate }}</span>
+                            <span class="text-teal-600 font-semibold">点击阅读结果 →</span>
+                        </div>
+                    </div>
+                    <div v-if="reports.labs.length === 0" class="col-span-full text-center py-20 text-slate-400">暂无检验报告</div>
+                </div>
+
+                <!-- Imaging reports list -->
+                <div v-show="reportsTab === 'imaging'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div v-for="r in reports.imagings" :key="r.id" class="bg-white p-6 rounded-2xl border border-slate-100 hover:border-teal-100 shadow-sm hover:shadow transition-all cursor-pointer flex flex-col justify-between" @click="fetchImagingReportDetail(r.id)">
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-sm font-bold text-slate-800">{{ r.reportName }}</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] bg-slate-100 text-slate-600 font-semibold font-mono">{{ r.modality }}</span>
+                            </div>
+                            <div class="space-y-1 text-xs text-slate-400 font-light font-mono">
+                                <div>编号：{{ r.reportNo }}</div>
+                                <div>开单医生：{{ r.doctorName || '-' }}</div>
+                                <div>检查部位：{{ r.bodyPart || '-' }}</div>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100 pt-4 flex items-center justify-between text-[10px] text-slate-400 font-mono mt-4">
+                            <span>报告日期：{{ r.reportDate }}</span>
+                            <span class="text-teal-600 font-semibold">点击阅读片诊记录 →</span>
+                        </div>
+                    </div>
+                    <div v-if="reports.imagings.length === 0" class="col-span-full text-center py-20 text-slate-400">暂无影像报告</div>
+                </div>
+            </div>
+
+            <!-- 9. Health Profile -->
+            <div v-show="currentPage === 'healthProfile'" class="container mx-auto px-6 py-10 max-w-4xl">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">健康档案卡片</h2>
+                    <p class="mt-2 text-slate-500">基于您历次线上线下诊疗行为的智能医疗汇总</p>
+                </div>
+                <div class="bg-white rounded-3xl border border-slate-100 shadow-xl p-8 space-y-8">
+                    <!-- Profile Header with Download Action button -->
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-slate-100">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 rounded-full bg-teal-50 text-teal-700 text-2xl font-bold flex items-center justify-center">{{ (healthProfile.info.patientName || '患').slice(0, 1) }}</div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800 leading-snug">{{ healthProfile.info.patientName }}</h3>
+                                <p class="text-xs text-slate-400 mt-1 font-mono">性别：{{ healthProfile.info.genderText }} | 绑定手机：{{ healthProfile.info.phone }}</p>
+                            </div>
+                        </div>
+                        <button id="btnDownloadProfile" class="bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-lg hover:shadow-teal-500/20 active:translate-y-0.5 transition-all flex items-center gap-1.5" @click="downloadHealthProfile">
+                            <span>⬇️</span> 一键下载健康档案 (MD版)
+                        </button>
+                    </div>
+
+                    <!-- Statistics grid -->
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="bg-slate-50 rounded-2xl p-5 text-center">
+                            <span class="block text-3xl font-black text-teal-600 tracking-tight mb-1">{{ healthProfile.info.appointmentCount || 0 }}</span>
+                            <span class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">挂号预约数</span>
+                        </div>
+                        <div class="bg-slate-50 rounded-2xl p-5 text-center">
+                            <span class="block text-3xl font-black text-rose-500 tracking-tight mb-1">{{ healthProfile.info.consultationCount || 0 }}</span>
+                            <span class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">在线问诊条</span>
+                        </div>
+                        <div class="bg-slate-50 rounded-2xl p-5 text-center">
+                            <span class="block text-3xl font-black text-indigo-500 tracking-tight mb-1">{{ healthProfile.info.prescriptionCount || 0 }}</span>
+                            <span class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">历史处方量</span>
+                        </div>
+                    </div>
+
+                    <!-- Timeline history -->
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800 mb-4 border-l-4 border-teal-500 pl-2">最近预约/就医轨迹</h4>
+                        <div class="border-l border-slate-100 pl-4 space-y-6 relative ml-2">
+                            <div v-for="item in healthProfile.info.recentAppointments" :key="item.id" class="relative group">
+                                <div class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-teal-500 outline outline-4 outline-white"></div>
+                                <div class="text-xs text-slate-400 font-mono mb-1">{{ item.appointmentDate }}</div>
+                                <div class="text-sm font-semibold text-slate-700">就诊挂号单：{{ item.appointmentNo }}</div>
+                                <div class="text-xs text-slate-400 font-mono mt-0.5">时间：{{ item.timeSlot === 'MORNING' ? '上午' : '下午' }} | 预约单状态: {{ item.statusText }}</div>
+                            </div>
+                            <div v-if="!healthProfile.info.recentAppointments || healthProfile.info.recentAppointments.length === 0" class="text-center py-6 text-slate-400 text-xs">暂无预约诊断明细轨迹</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 10. Hospital Guide View -->
+            <div v-show="currentPage === 'hospitalGuide'" class="container mx-auto px-6 py-10 max-w-4xl">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">就医指南</h2>
+                    <p class="mt-2 text-slate-500">为您梳理院内就诊基本线路，让看病路途不再迷茫困扰</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+                        <div class="text-2xl mb-3">📋</div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-3">就诊流程</h3>
+                        <div class="space-y-4 text-xs font-light relative border-l border-slate-100 pl-4 ml-2">
+                            <div class="relative"><span class="absolute -left-[21px] w-2.5 h-2.5 rounded-full bg-teal-500"></span><strong class="font-semibold block text-slate-700 mb-0.5">1. 预约挂号</strong>线上选择医生锁定出诊号源。</div>
+                            <div class="relative"><span class="absolute -left-[21px] w-2.5 h-2.5 rounded-full bg-teal-500"></span><strong class="font-semibold block text-slate-700 mb-0.5">2. 候诊报到</strong>凭预约单在当前科室自助机取号。</div>
+                            <div class="relative"><span class="absolute -left-[21px] w-2.5 h-2.5 rounded-full bg-teal-500"></span><strong class="font-semibold block text-slate-700 mb-0.5">3. 医生诊疗</strong>入室配合专家把脉会诊。</div>
+                            <div class="relative"><span class="absolute -left-[21px] w-2.5 h-2.5 rounded-full bg-teal-500"></span><strong class="font-semibold block text-slate-700 mb-0.5">4. 取药化验</strong>依据处方到窗口缴费拉药。</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+                        <div class="text-2xl mb-3">📍</div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-3">楼层指引导航</h3>
+                        <table class="w-full text-xs text-slate-500 font-light space-y-1">
+                            <tbody>
+                                <tr class="border-b border-slate-50 pb-2"><td class="font-bold text-slate-700 w-10">4F</td><td>儿科门诊 · 生化化验区</td></tr>
+                                <tr class="border-b border-slate-50 py-2"><td class="font-bold text-slate-700">3F</td><td>外科手术区 · 脑电成像MRI</td></tr>
+                                <tr class="border-b border-slate-50 py-2"><td class="font-bold text-slate-700">2F</td><td>内科综合室 · 采血站</td></tr>
+                                <tr class="border-b border-slate-50 py-2"><td class="font-bold text-slate-700">1F</td><td>大厅收费 · 中西大药房 · 急诊室</td></tr>
+                                <tr class="py-2"><td class="font-bold text-slate-700">B1</td><td>地下立体停车场 · 职工食堂</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+                        <div class="text-2xl mb-3">🅿️</div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-3">院内停车策略</h3>
+                        <div class="text-xs text-slate-500 font-light leading-relaxed space-y-2">
+                            <p><strong>院内立体车库</strong>：拥有700+车位，大门由医院正东进入。</p>
+                            <p><strong>费用规则</strong>：进入半小时完全免费，正式停车每小时为 `5` 元，封顶计费 `30` 元/天。</p>
+                            <p><strong>优惠凭证</strong>：凭就诊病历单或者处方发票由服务台报销免费洗车券及2小时停车券。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 11. Messages view -->
+            <div v-show="currentPage === 'messages'" class="container mx-auto px-6 py-10 max-w-3xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-black text-slate-800">消息通知中心</h2>
+                    <button class="text-xs text-slate-400 hover:text-teal-600 font-semibold" @click="markAllNotificationsRead">标记所有已读</button>
+                </div>
+                <div class="space-y-4">
+                    <div v-for="n in notifications" :key="n.id" class="bg-white p-5 rounded-2xl border border-slate-100 hover:border-teal-50/80 shadow-sm flex gap-4 transition-all" :class="n.isRead === 0 ? 'bg-teal-50/10' : ''" @click="markNotifRead(n.id)">
+                        <div class="w-1.5 h-1.5 rounded-full bg-teal-500 mt-2 flex-shrink-0" :class="n.isRead === 0 ? 'visible' : 'invisible'"></div>
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-xs font-semibold text-teal-600 tracking-wider font-mono">#{{ n.typeText }}</span>
+                                <span class="text-[10px] text-slate-400 font-mono">{{ n.time }}</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-slate-800 mb-1">{{ n.title }}</h4>
+                            <p class="text-xs font-light text-slate-500 leading-relaxed">{{ n.content }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="notifications.length === 0" class="text-center py-20 text-slate-400 font-light">暂无消息通知</div>
+            </div>
+
+            <!-- 12. Service Center(FAQ/Suggestion) -->
+            <div v-show="currentPage === 'serviceCenter'" class="container mx-auto px-6 py-10 max-w-4xl">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">客服中心</h2>
+                    <p class="mt-2 text-slate-500">回答您的挂号退号疑惑，并协助收集您的反馈信息</p>
+                </div>
+
+                <!-- Accordion FAQs tabs -->
+                <div class="flex max-w-sm mx-auto border border-slate-200 rounded-xl overflow-hidden mb-8 shadow-sm">
+                    <button class="flex-1 py-2 text-center text-xs transition-all font-semibold" :class="faqFilterCat === '' ? 'bg-teal-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'" @click="filterFaqs('')">全部</button>
+                    <button class="flex-1 py-2 text-center text-xs transition-all font-semibold" :class="faqFilterCat === 'APPOINTMENT' ? 'bg-teal-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'" @click="filterFaqs('APPOINTMENT')">预约挂号</button>
+                    <button class="flex-1 py-2 text-center text-xs transition-all font-semibold" :class="faqFilterCat === 'PAYMENT' ? 'bg-teal-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'" @click="filterFaqs('PAYMENT')">缴费分类</button>
+                </div>
+
+                <div class="max-w-md mx-auto mb-8 flex gap-2">
+                    <input type="text" v-model="filters.faqQuery" placeholder="输入关键字搜索解答..." class="flex-grow px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500">
+                    <button class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold px-5 py-2.5 rounded-xl transition-all shadow-sm flex-shrink-0" @click="searchFaqs">搜索问题</button>
+                </div>
+
+                <!-- Accordion lists -->
+                <div class="space-y-3 mb-10 max-w-2xl mx-auto">
+                    <div v-for="f in faqs" :key="f.id" class="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm transition-all">
+                        <div class="px-5 py-4 cursor-pointer flex justify-between items-center select-none font-bold text-slate-800 text-sm focus:bg-slate-50" @click="f._open = !f._open">
+                            <span>Q: {{ f.question }}</span>
+                            <span class="text-xs text-slate-400 transform transition-transform duration-200" :class="f._open ? 'rotate-180' : ''">▼</span>
+                        </div>
+                        <div v-show="f._open" class="px-5 pb-5 pt-1 text-slate-500 text-xs font-light leading-relaxed border-t border-slate-50">
+                            A: {{ f.answer }}
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100 my-10 max-w-2xl mx-auto">
+
+                <!-- Suggestion complaints form -->
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-xl p-8 max-w-2xl mx-auto">
+                    <h3 class="text-xl font-bold text-slate-800 text-center mb-6">提交您的诉求建议</h3>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-semibold text-slate-500">诉求类型</label>
+                                <select v-model="complaint.type" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white">
+                                    <option value="SUGGESTION">提建议</option>
+                                    <option value="COMPLAINT">投投诉</option>
+                                    <option value="PRAISE">点赞表扬</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-semibold text-slate-500">联系方式</label>
+                                <input type="text" v-model="complaint.contact" placeholder="留下您的微信或电话号" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500">
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-semibold text-slate-500">标题</label>
+                            <input type="text" v-model="complaint.title" placeholder="简要概括反馈核心..." class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-semibold text-slate-500">具体陈述内容</label>
+                            <textarea v-model="complaint.content" rows="4" placeholder="..." class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 resize-none"></textarea>
+                        </div>
+                        <button class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-teal-500/20 active:translate-y-0.5 transition-all text-base mt-2" @click="submitComplaint">确认提交我的反馈</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Dynamic Unified Modal Detail Popup (Prescription and Appointments detail) -->
+        <div v-show="modal.show" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-55 flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-2xl w-full p-8 relative max-h-[90vh] overflow-y-auto pr-2 scrollbar-hide">
+                <button class="absolute top-5 right-5 text-slate-400 hover:text-slate-800 text-xl font-bold font-mono select-none" @click="closeUnifiedModal">×</button>
+
+                <!-- Inner slot 1: General Appointment Details -->
+                <div v-if="modal.content === 'appointment'">
+                    <h3 class="text-xl font-black text-slate-800 mb-6">预约挂号明细</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-light text-slate-500 pb-6 border-b border-slate-100">
+                        <div><strong class="font-semibold text-slate-800">编号：</strong>{{ modal.data.appointmentNo }}</div>
+                        <div><strong class="font-semibold text-slate-800">状态：</strong>{{ modal.data.statusLabel }}</div>
+                        <div><strong class="font-semibold text-slate-800">患者：</strong>{{ modal.data.patientName }}</div>
+                        <div><strong class="font-semibold text-slate-800">医生：</strong>{{ modal.data.doctorTitle }} {{ modal.data.doctorName }}</div>
+                        <div><strong class="font-semibold text-slate-800">科室：</strong>{{ modal.data.departmentName }}</div>
+                        <div><strong class="font-semibold text-slate-800">预约档期：</strong>{{ modal.data.appointmentDate }} {{ modal.data.timeSlotText }}</div>
+                        <div><strong class="font-semibold text-slate-800">主诉描述：</strong>{{ modal.data.symptom || '无' }}</div>
+                        <div><strong class="font-semibold text-slate-800">改签次数：</strong>{{ modal.data.rescheduleCount || 0 }}次</div>
+                        <div v-if="modal.data.cancelReason" class="col-span-full bg-rose-50 text-rose-700 p-3 rounded-xl border border-rose-100">
+                            <strong>取消原因：</strong>{{ modal.data.cancelReason }}
+                        </div>
+                    </div>
+                    <div v-if="modal.data.statusText === 'PENDING' || modal.data.statusText === 'CONFIRMED'" class="mt-6 flex justify-end gap-3">
+                        <button class="bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold px-6 py-2.5 rounded-xl transition text-xs shadow-sm shadow-rose-500/5" @click="cancelAppointment(modal.data.id)">取消预约</button>
+                        <button class="bg-teal-600 hover:bg-teal-700 text-white font-bold px-6 py-2.5 rounded-xl transition text-xs shadow-sm shadow-teal-500/10" @click="rescheduleAppointment(modal.data)">改签预约</button>
+                    </div>
+                </div>
+
+                <!-- Inner slot 2: Electronic Prescription Card -->
+                <div v-if="modal.content === 'prescription'" class="space-y-6">
+                    <div class="border-b border-slate-100 pb-4 text-center">
+                        <h3 class="text-xl font-black text-teal-600 tracking-tight">💊 电子处方签面</h3>
+                        <span class="text-[10px] text-slate-400 font-mono tracking-widest uppercase">单号：{{ modal.data.prescriptionNo }}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-xs font-light text-slate-500 pb-4 border-b border-slate-100">
+                        <div><strong class="font-semibold text-slate-800">主看医生：</strong>{{ modal.data.doctorName }}</div>
+                        <div><strong class="font-semibold text-slate-800">就诊患者：</strong>{{ modal.data.patientName }}</div>
+                        <div class="col-span-2"><strong class="font-semibold text-slate-800">诊断结果：</strong>{{ modal.data.diagnosis }}</div>
+                        <div class="col-span-2"><strong class="font-semibold text-slate-800">医嘱建议：</strong>{{ modal.data.advice || '遵医嘱' }}</div>
+                    </div>
+                    <!-- Medicines list table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left text-slate-500 font-light border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 border-b border-slate-100 font-semibold font-mono">
+                                    <th class="p-3">药名</th>
+                                    <th class="p-3">规格</th>
+                                    <th class="p-3">用法</th>
+                                    <th class="p-3">天数</th>
+                                    <th class="p-3">小计</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="i in modal.data.items" :key="i.id" class="border-b border-slate-50 font-mono">
+                                    <td class="p-3 font-semibold text-slate-800">{{ i.medicineName }}</td>
+                                    <td class="p-3">{{ i.specification }}</td>
+                                    <td class="p-3">{{ i.dosage }} @ {{ i.frequency }} ({{ i.usageMethod }})</td>
+                                    <td class="p-3">{{ i.days }}天x{{ i.quantity }}</td>
+                                    <td class="p-3 font-bold text-rose-500">¥{{ i.subtotal }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="flex justify-between items-center text-sm pt-4 border-t border-slate-100 flex-wrap">
+                        <span class="text-slate-400 font-light font-mono">开方日期：{{ modal.data.createdAt ? modal.data.createdAt.slice(0, 10) : '' }}</span>
+                        <div class="text-right">
+                            <span class="text-slate-500 text-xs">合计应缴医药费：</span>
+                            <span class="text-rose-500 text-xl font-bold font-mono">¥{{ modal.data.totalAmount }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inner slot 3: Lab Report reader -->
+                <div v-if="modal.content === 'labReport'" class="space-y-6">
+                    <div class="border-b border-slate-100 pb-4 text-center">
+                        <h3 class="text-xl font-black text-slate-800 tracking-tight">📊 {{ modal.data.reportName }}</h3>
+                        <span class="text-[10px] text-slate-400 font-mono tracking-widest">报告号：{{ modal.data.reportNo }}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-xs font-light text-slate-500 pb-4 border-b border-slate-100 font-mono">
+                        <div><strong class="font-semibold text-slate-800">采集标本：</strong>{{ modal.data.sampleType || '-' }}</div>
+                        <div>
+                            <strong class="font-semibold text-slate-800">系统判断：</strong>
+                            <strong :class="modal.data.normalFlag===1?'text-teal-600':'text-rose-500'">{{ modal.data.normalFlagText }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left text-slate-500 font-light border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 border-b border-slate-100 font-semibold font-mono">
+                                    <th class="p-3">指标名</th>
+                                    <th class="p-3">测定值</th>
+                                    <th class="p-3">参考范围</th>
+                                    <th class="p-3">说明</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="item in modal.data.parsedResult" :key="item.key" class="border-b border-slate-50 font-mono">
+                                    <td class="p-3 font-semibold text-slate-800">{{ item.key }}</td>
+                                    <td class="p-3">{{ item.value }} {{ item.unit }}</td>
+                                    <td class="p-3">{{ item.range }}</td>
+                                    <td class="p-3 font-bold" :class="item.flag==='H'?'text-rose-500':item.flag==='L'?'text-blue-500':'text-teal-600'">
+                                        {{ item.flag === 'H' ? '偏高 ↑' : item.flag === 'L' ? '偏低 ↓' : '正常' }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div v-if="modal.data.conclusion" class="bg-slate-50 p-4 rounded-2xl text-xs font-light text-slate-600 leading-relaxed border border-slate-100">
+                        <h4 class="font-bold text-slate-700 mb-1.5">医生解读意见</h4>
+                        {{ modal.data.conclusion }}
+                    </div>
+                </div>
+
+                <!-- Inner slot 4: Imaging report CT modal -->
+                <div v-if="modal.content === 'imagingReport'" class="space-y-6">
+                    <div class="border-b border-slate-100 pb-4 text-center">
+                        <h3 class="text-xl font-black text-slate-800 tracking-tight">🩻 {{ modal.data.reportName }}</h3>
+                        <span class="text-[10px] text-slate-400 font-mono tracking-widest">报告号：{{ modal.data.reportNo }}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-xs font-light text-slate-500 pb-4 border-b border-slate-100">
+                        <div><strong class="font-semibold text-slate-800">胶片模版：</strong>{{ modal.data.modality }}</div>
+                        <div><strong class="font-semibold text-slate-800">扫描部位：</strong>{{ modal.data.bodyPart || '-' }}</div>
+                        <div><strong class="font-semibold text-slate-800">开单专家：</strong>{{ modal.data.doctorName || '-' }}</div>
+                        <div><strong class="font-semibold text-slate-800">出报告期：</strong>{{ modal.data.reportDate }}</div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="text-sm font-bold text-teal-600 mb-2">影像所见（检查所见）：</h4>
+                            <p class="text-xs font-light text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-100">{{ modal.data.finding }}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-teal-600 mb-2">影像诊断（印象结论）：</h4>
+                            <p class="text-xs font-semibold text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-100">{{ modal.data.impression }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Start consultation modal builder popup -->
+        <div v-show="consultation.modalShow" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-55 flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full p-8 relative">
+                <button class="absolute top-5 right-5 text-slate-400 hover:text-slate-800 text-xl font-bold font-mono select-none" @click="closeConsultModal">×</button>
+                <h3 class="text-lg font-bold text-slate-800 mb-6 text-center">新建图文问诊单</h3>
+                <div class="space-y-4">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-slate-500">选择科室：</label>
+                        <select v-model="consultation.modalDeptId" @change="onConsultDeptChange" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white">
                             <option value="">请先选择科室</option>
+                            <option v-for="d in deptList" :value="d.id" :key="d.id">{{ d.deptName }}</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>症状描述：</label>
-                        <textarea id="consultSymptom" rows="4" placeholder="请详细描述您的症状，方便医生提前了解..."></textarea>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-slate-500">选择主治医生：</label>
+                        <select v-model="consultation.modalDoctorId" :disabled="!consultation.modalDeptId" class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 bg-white disabled:bg-slate-50 disabled:text-slate-400">
+                            <option value="">请选择医生</option>
+                            <option v-for="doc in consultationDoctors" :value="doc.id" :key="doc.id">{{ doc.realName }} ({{ doc.title }})</option>
+                        </select>
                     </div>
-                    <button class="btn btn-primary" onclick="submitConsultation()" style="width:100%;">发起问诊</button>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-slate-500">详细病情主诉描述：</label>
+                        <textarea v-model="consultation.modalSymptom" rows="4" placeholder="请详细陈述您的身体异常状况以及近期不适，方便问诊医生准确判诊..." class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 resize-none text-xs"></textarea>
+                    </div>
+                    <button class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-teal-500/20 active:translate-y-0.5 transition-all text-xs mt-2" @click="submitConsultation">确认发起问诊订单</button>
                 </div>
             </div>
         </div>
+
+        <!-- Footer Section -->
+        <footer class="bg-white border-t border-slate-100 py-6 text-center text-xs text-slate-400 font-mono mt-10">
+            <div class="container mx-auto px-6">
+                <p>Copyright © 2026 芯芯数字化医疗在线服务系统. 课程考查模拟教学版.</p>
+                <p class="mt-1 text-[10px] text-slate-300">本系统安全级别: 极高. 经由 爱吃罗氏虾🦐 优化.</p>
+            </div>
+        </footer>
     </div>
 
-    <!-- 我的预约页 -->
-    <div id="myAppointments" class="page">
-        <div class="container">
-            <h2 style="text-align: center; color: hsl(var(--medical-blue)); margin-bottom: 30px; font-size: 32px;">我的预约</h2>
-            
-            <!-- 筛选框 -->
-            <div class="filter-box">
-                <select id="appointmentStatusFilter" onchange="loadMyAppointments()">
-                    <option value="">全部状态</option>
-                    <option value="PENDING">待确认</option>
-                    <option value="CONFIRMED">已确认</option>
-                    <option value="COMPLETED">已完成</option>
-                    <option value="CANCELLED">已取消</option>
-                </select>
-                <input type="text" id="appointmentSearch" placeholder="搜索预约号或医生姓名..." onkeyup="searchMyAppointments()">
-            </div>
-
-            <!-- 预约列表 -->
-            <div id="appointmentList" class="appointment-list">
-                <!-- AJAX动态加载预约列表 -->
-            </div>
-
-            <!-- 分页 -->
-            <div class="pagination" id="pagination">
-                <!-- 分页按钮 -->
-            </div>
-        </div>
-    </div>
-
-    <!-- 预约详情模态框 -->
-    <div id="appointmentModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h3 style="color: hsl(var(--medical-blue)); margin-bottom: 20px;">预约详情</h3>
-            <div id="appointmentDetail"></div>
-            <div class="modal-actions">
-                <button class="btn btn-outline" onclick="closeModal()">关闭</button>
-                <button class="btn btn-primary" id="cancelBtn" onclick="cancelAppointment()">取消预约</button>
-                <button class="btn btn-primary" id="rescheduleBtn" onclick="rescheduleAppointment()">改签预约</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 登录/注册页 -->
-    <div id="login" class="page">
-        <div class="container">
-            <div class="auth-box">
-                <div class="tabs">
-                    <button class="tab active" onclick="switchTab('login')">登录</button>
-                    <button class="tab" onclick="switchTab('register')">注册</button>
-                </div>
-
-                <!-- 登录表单 -->
-                <form id="loginForm" class="auth-form active">
-                    <div class="form-group">
-                        <label>用户名：</label>
-                        <input type="text" id="loginUsername" required placeholder="请输入用户名">
-                    </div>
-                    <div class="form-group">
-                        <label>密码：</label>
-                        <input type="password" id="loginPassword" required placeholder="请输入密码">
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">登录</button>
-                </form>
-
-                <!-- 注册表单 -->
-                <form id="registerForm" class="auth-form">
-                    <div class="form-group">
-                        <label>用户名：</label>
-                        <input type="text" id="regUsername" required onblur="checkUsername()" placeholder="3-20位字母数字下划线">
-                        <span id="usernameTip" class="tip"></span>
-                    </div>
-                    <div class="form-group">
-                        <label>密码：</label>
-                        <input type="password" id="regPassword" required placeholder="至少6位密码">
-                    </div>
-                    <div class="form-group">
-                        <label>确认密码：</label>
-                        <input type="password" id="regPasswordConfirm" required placeholder="再次输入密码">
-                    </div>
-                    <div class="form-group">
-                        <label>真实姓名：</label>
-                        <input type="text" id="regRealName" required placeholder="请输入真实姓名">
-                    </div>
-                    <div class="form-group">
-                        <label>手机号：</label>
-                        <input type="tel" id="regPhone" required placeholder="请输入手机号码">
-                    </div>
-                    <div class="form-group">
-                        <label>邮箱：</label>
-                        <input type="email" id="regEmail" placeholder="选填，用于接收通知">
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">注册</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- 报告查询页 -->
-    <div id="reports" class="page">
-        <div class="container">
-            <h2 style="text-align:center;color:hsl(var(--medical-blue));margin-bottom:10px;font-size:32px;">报告查询</h2>
-            <p style="text-align:center;color:hsl(210,10%,45%);margin-bottom:25px;">检验报告 · 影像报告 · 历史对比</p>
-            <div class="report-tabs">
-                <button class="report-tab active" onclick="switchReportTab('lab')">检验报告</button>
-                <button class="report-tab" onclick="switchReportTab('imaging')">影像报告</button>
-            </div>
-            <div id="labReports" class="report-list"></div>
-            <div id="imagingReports" class="report-list" style="display:none;"></div>
-        </div>
-    </div>
-
-    <!-- 报告详情模态框 -->
-    <div id="reportModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeReportModal()">&times;</span>
-            <div id="reportDetail"></div>
-            <div class="modal-actions">
-                <button class="btn btn-outline" onclick="closeReportModal()">关闭</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 健康档案页 -->
-    <div id="healthProfile" class="page">
-        <div class="container">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                <h2 style="color:hsl(var(--medical-blue)); font-size:32px; margin: 0;">健康档案</h2>
-                <div id="exportProfileBtnContainer" style="display: none;">
-                    <button id="btnDownloadProfile" class="btn btn-primary" onclick="downloadHealthProfile()">⬇️ 一键下载健康档案 (MD版)</button>
-                </div>
-            </div>
-            <div id="profileContent"><p style="text-align:center;padding:40px;">加载中...</p></div>
-        </div>
-    </div>
-
-    <!-- 就医指南页 -->
-    <div id="hospitalGuide" class="page">
-        <div class="container">
-            <h2 style="text-align:center;color:hsl(var(--medical-blue));margin-bottom:25px;font-size:32px;">就医指南</h2>
-            <div class="guide-grid">
-                <div class="guide-card">
-                    <div class="guide-icon">📋</div>
-                    <h3>就诊流程</h3>
-                    <div class="guide-steps">
-                        <div class="step"><span class="step-num">1</span>挂号/预约</div>
-                        <div class="step-arrow">→</div>
-                        <div class="step"><span class="step-num">2</span>候诊报到</div>
-                        <div class="step-arrow">→</div>
-                        <div class="step"><span class="step-num">3</span>医生面诊</div>
-                        <div class="step-arrow">→</div>
-                        <div class="step"><span class="step-num">4</span>检查/取药</div>
-                    </div>
-                </div>
-                <div class="guide-card">
-                    <div class="guide-icon">📍</div>
-                    <h3>楼层导航</h3>
-                    <table class="floor-table">
-                        <tr><td>B1</td><td>地下停车场 · 职工食堂</td></tr>
-                        <tr><td>1F</td><td>大厅 · 挂号收费 · 药房 · 急诊</td></tr>
-                        <tr><td>2F</td><td>内科 · 检验科</td></tr>
-                        <tr><td>3F</td><td>外科 · 影像科</td></tr>
-                        <tr><td>4F</td><td>儿科 · 妇产科</td></tr>
-                        <tr><td>5F</td><td>眼科 · 口腔科 · 行政办公</td></tr>
-                    </table>
-                </div>
-                <div class="guide-card">
-                    <div class="guide-icon">🅿️</div>
-                    <h3>停车指引</h3>
-                    <div class="parking-info">
-                        <p><strong>地下停车场：</strong>B1层，入口位于医院南门</p>
-                        <p><strong>收费标准：</strong>前30分钟免费，5元/小时，封顶30元/天</p>
-                        <p><strong>就诊优惠：</strong>凭当日缴费单可减免2小时停车费</p>
-                        <p><strong>周边停车场：</strong>万达广场地下停车场（步行5分钟）</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 消息中心页 -->
-    <div id="messages" class="page">
-        <div class="container">
-            <h2 style="text-align:center;color:hsl(var(--medical-blue));margin-bottom:20px;font-size:32px;">消息中心</h2>
-            <div style="text-align:right;margin-bottom:15px;">
-                <span style="font-size:14px;color:hsl(210,10%,45%);margin-right:12px;">未读：<strong id="unreadBadge" style="color:hsl(var(--medical-blue));">0</strong></span>
-                <button class="btn btn-outline" onclick="markAllNotificationsRead()" style="font-size:13px;padding:6px 16px;">全部已读</button>
-            </div>
-            <div id="notificationList"></div>
-        </div>
-    </div>
-
-    <!-- 客服中心页 -->
-    <div id="serviceCenter" class="page">
-        <div class="container">
-            <h2 style="text-align:center;color:hsl(var(--medical-blue));margin-bottom:10px;font-size:32px;">客服中心</h2>
-            <p style="text-align:center;color:hsl(210,10%,45%);margin-bottom:25px;">常见问题 · 在线咨询 · 投诉建议</p>
-            <div class="faq-filter">
-                <button class="faq-cat active" onclick="filterFaqs('')">全部</button>
-                <button class="faq-cat" onclick="filterFaqs('APPOINTMENT')">预约挂号</button>
-                <button class="faq-cat" onclick="filterFaqs('PAYMENT')">缴费医保</button>
-                <button class="faq-cat" onclick="filterFaqs('GUIDE')">导诊指南</button>
-                <input type="text" id="faqSearch" placeholder="搜索问题..." onkeyup="searchFaqs()" style="padding:10px 16px;border-radius:24px;border:2px solid hsl(var(--medical-gray));width:200px;">
-            </div>
-            <div id="faqList"></div>
-            <hr style="margin:35px 0;border-color:hsl(var(--medical-gray))">
-            <h3 style="color:hsl(var(--medical-blue));text-align:center;margin-bottom:18px;">提交投诉/建议</h3>
-            <div class="complaint-form" style="max-width:600px;margin:0 auto;">
-                <select id="complaintType" style="width:100%;padding:12px;border-radius:12px;border:2px solid hsl(var(--medical-gray));margin-bottom:14px;">
-                    <option value="COMPLAINT">投诉</option>
-                    <option value="SUGGESTION">建议</option>
-                    <option value="PRAISE">表扬</option>
-                </select>
-                <input type="text" id="complaintTitle" placeholder="标题" style="width:100%;padding:12px;border-radius:12px;border:2px solid hsl(var(--medical-gray));margin-bottom:14px;">
-                <textarea id="complaintContent" rows="4" placeholder="详细内容..." style="width:100%;padding:12px;border-radius:12px;border:2px solid hsl(var(--medical-gray));margin-bottom:14px;"></textarea>
-                <input type="text" id="complaintContact" placeholder="联系方式（选填）" style="width:100%;padding:12px;border-radius:12px;border:2px solid hsl(var(--medical-gray));margin-bottom:14px;">
-                <button class="btn btn-primary" onclick="submitComplaint()" style="width:100%;background:var(--gradient-medical);color:white;border:none;">提交</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 提示消息 -->
-    <div id="message" class="message"></div>
-
+    <!-- Application main script mount routing -->
     <script src="/js/app.js"></script>
 </body>
 </html>
